@@ -22,7 +22,7 @@ readdirSync(handlersDir).forEach(handler => {
 })
 
 client.on('ready', () => {
-    let job = new CronJob("00 00 * * * *",
+    let job = new CronJob("00 01 00 * * 1",
     function() {SendUpdate()},
     null,
     true,
@@ -115,7 +115,7 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
     if (interaction.isSelectMenu()) {
         if (!interaction.customId.endsWith(interaction.user.id)){
             interaction.reply({
-                content: "This is not your decision to make.",
+                content: "Touch that again and you'll get fed to the basement tree.",
                 ephemeral: true
             });
             return;
@@ -137,7 +137,7 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
 
         if (!interaction.customId.endsWith(interaction.user.id)){
             interaction.reply({
-                content: "This is not your decision to make.",
+                content: "Touch that again and you'll get fed to the basement tree.",
                 ephemeral: true
             });
             return;
