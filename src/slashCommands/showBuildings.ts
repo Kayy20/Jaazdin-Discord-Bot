@@ -27,6 +27,7 @@ const command : SlashCommand = {
 
             let embed = new EmbedBuilder()
             .setTitle("Buildings")
+            .setColor('Red')
 
             if (!foundBuilding) 
             {
