@@ -62,17 +62,17 @@ const command : SlashCommand = {
                 [
                     new ButtonBuilder()
                     .setLabel('One Week Decrease')
-                    .setCustomId(`1week-${interaction.user.id}`)
+                    .setCustomId(`item-1week-${interaction.user.id}`)
                     .setStyle(ButtonStyle.Primary)
                     ,
                     new ButtonBuilder()
                     .setLabel('Two Week Decrease')
-                    .setCustomId(`2week-${interaction.user.id}`)
+                    .setCustomId(`item-2week-${interaction.user.id}`)
                     .setStyle(ButtonStyle.Primary)
                     ,
                     new ButtonBuilder()
                     .setLabel('Instant Finish')
-                    .setCustomId(`finishitem-${interaction.user.id}`)
+                    .setCustomId(`item-finishitem-${interaction.user.id}`)
                     .setStyle(ButtonStyle.Primary)
                 ])
 

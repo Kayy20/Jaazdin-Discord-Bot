@@ -60,12 +60,12 @@ const command : SlashCommand = {
                 [
                     new ButtonBuilder()
                     .setLabel('One Week Decrease')
-                    .setCustomId(`1week-${interaction.user.id}`)
+                    .setCustomId(`plant-1week-${interaction.user.id}`)
                     .setStyle(ButtonStyle.Primary)
                     ,
                     new ButtonBuilder()
                     .setLabel('Two Week Decrease')
-                    .setCustomId(`2week-${interaction.user.id}`)
+                    .setCustomId(`plant-2week-${interaction.user.id}`)
                     .setStyle(ButtonStyle.Primary)
                     ,
                 ])
