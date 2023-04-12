@@ -1,12 +1,12 @@
 import { EmbedBuilder, EmbedType, SlashCommandBuilder, userMention } from "discord.js";
 import { SlashCommand } from "../types";
 import mongoose from "mongoose";
-import BuildingDB from "../schemas/Building";
+import ItemDB from "../schemas/Item";
 
 const command : SlashCommand = {
     command: new SlashCommandBuilder()
-    .setName("showbuildings")
-    .setDescription("Show any buildings in progress")
+    .setName("showitems")
+    .setDescription("Show any items in progress")
     ,
     execute: async (interaction) => {
         // Put all this information into the db
@@ -23,11 +23,11 @@ const command : SlashCommand = {
             
             
 
-            const foundBuilding = await BuildingDB.find({});
+            const foundBuilding = await ItemDB.find({});
 
             let embed = new EmbedBuilder()
-            .setTitle("Buildings")
-            .setColor('Red')
+            .setTitle("Items")
+            .setColor('Purple')
 
             if (!foundBuilding) 
             {
@@ -44,7 +44,7 @@ const command : SlashCommand = {
                     embed.addFields(
                         {
                             name: building.name,
-                            value: `Tier: ${building.tier} \t Weeks Left: ${building.time} \t Owner: ${userMention(building.user)}`
+                            value: `Weeks Left: ${building.time} \t Owner: ${userMention(building.user)}`
                         }
                     )
                 }

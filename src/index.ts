@@ -10,6 +10,7 @@ import  mongoose from "mongoose";
 import BuildingDB from "./schemas/Building";
 import ChannelDB from "./schemas/Channel";
 import PlantDB from "./schemas/Plant";
+import ItemDB from "./schemas/Item";
 config()
 
 client.slashCommands = new Collection<string, SlashCommand>()
@@ -76,6 +77,22 @@ async function SendUpdate() {
         }
     }
 
+    let finishedItems = "";
+    let updatedItems = "";
+    // update each item
+    for await (const doc of ItemDB.find()) {
+        doc.time -= 1;
+        if (doc.time == 0) {
+            pings += userMention(doc.user);
+            finishedItems += `${userMention(doc.user)}, your ${doc.name} is finished!\n`;
+            ItemDB.deleteOne({name: doc.name}).exec();
+        }
+        else {
+            updatedItems += `${doc.name} \t Weeks Left: ${doc.time}\n`;
+            await doc.save();
+        }
+    }
+
     // Find Channel
     const channel = await client.channels.cache.get(foundBuilding.channel.toString());
         
@@ -99,6 +116,14 @@ async function SendUpdate() {
                 {
                     name: "Plants In Progress",
                     value: updatedPlants == "" ? "None" : updatedPlants
+                },
+                {
+                    name: "Finished Items",
+                    value: finishedItems == "" ? "None" : finishedItems
+                },
+                {
+                    name: "Items in Progress",
+                    value: updatedItems == "" ? "None" : updatedItems
                 }
             )
             .setTimestamp();
@@ -145,7 +170,7 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
 
         const foundBuilding = await BuildingDB.findOne({ name: buildingName});
         const foundPlant = await PlantDB.findOne({name: buildingName, time: plantTime, user: plantUser})
-        
+        const foundItem = await ItemDB.findOne({name: buildingName})
         if (plantTime != 0){
             if (!foundPlant) return;
 
@@ -219,9 +244,92 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
         }
 
         } else {
-            if (!foundBuilding)return;
+            if (!foundBuilding)
+            {
+                if (!foundItem) return;
+                if (interaction.customId.split('-')[0] == '1week') // Increase time by 1 week
+            {
+                foundItem.time -= 1;
 
-            if (interaction.customId.split('-')[0] == '1week') // Increase time by 1 week
+                if (foundItem.time <= 0) // Building is done!
+                {
+                    let embed = new EmbedBuilder()
+                    .setTitle(foundItem.name)
+                    .setDescription(`${userMention(foundItem.user)}, ${foundItem.name} is now finished!`)
+
+                    interaction.channel?.send({content: userMention(foundItem.user), embeds: [embed]})
+
+                    ItemDB.deleteOne({name: foundItem.name}).exec();
+
+                } else
+                {
+                    await foundItem.save();
+
+                    let embed = new EmbedBuilder()
+                    .setTitle(foundItem.name)
+                    .setDescription("Time till finished decreased by 1!")
+                    .addFields(
+                        {
+                        name: 'Amount:',
+                        value: `${foundItem.time} Weeks Left`
+                        }
+                    )
+        
+                    interaction.channel?.send({content: userMention(foundItem.user), embeds: [embed]})
+                }
+
+                interaction.reply({content: `${buildingName} Updated`})
+                interaction.deleteReply();
+            }
+            if (interaction.customId.split('-')[0] == '2week') // Increase time by 2 weeks
+            {
+                foundItem.time -= 2;
+
+                if (foundItem.time <= 0) // Building is done!
+                {
+                    let embed = new EmbedBuilder()
+                    .setTitle(foundItem.name)
+                    .setDescription(`${userMention(foundItem.user)}, ${foundItem.name} is now finished!`)
+
+                    interaction.channel?.send({content: userMention(foundItem.user), embeds: [embed]})
+
+                    ItemDB.deleteOne({name: foundItem.name}).exec();
+                } else
+                {
+                    await foundItem.save();
+
+                    let embed = new EmbedBuilder()
+                    .setTitle(foundItem.name)
+                    .setDescription("Time till finished decreased by 2!")
+                    .addFields(
+                        {
+                        name: 'Amount:',
+                        value: `${foundItem.time} Weeks Left`
+                        }
+                    )
+        
+                    interaction.channel?.send({content: userMention(foundItem.user), embeds: [embed]})
+                }
+
+                interaction.reply({content: `${buildingName} Updated`})
+                interaction.deleteReply();
+                
+            }
+            if (interaction.customId.split('-')[0] == 'finishitem') // Finish Building
+            {
+                let embed = new EmbedBuilder()
+                .setTitle(foundItem.name)
+                .setDescription(`${userMention(foundItem.user)}, ${foundItem.name} is now finished!`)
+
+                interaction.channel?.send({content: userMention(foundItem.user), embeds: [embed]})
+
+                BuildingDB.deleteOne({name: foundItem.name}).exec();
+
+                interaction.reply({content: `${buildingName} Updated`})
+                interaction.deleteReply();
+            }
+            } else {
+                if (interaction.customId.split('-')[0] == '1week') // Increase time by 1 week
             {
                 foundBuilding.time -= 1;
 
@@ -301,7 +409,10 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
 
                 interaction.reply({content: `${buildingName} Updated`})
                 interaction.deleteReply();
+            } 
             }
+
+            
         }
 
         interaction.message.delete();
