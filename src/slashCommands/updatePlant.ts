@@ -1,4 +1,4 @@
-import { InteractionResponse, SlashCommandBuilder, EmbedBuilder, SelectMenuBuilder, ActionRowBuilder, ButtonBuilder, userMention, ButtonStyle } from "discord.js";
+import { InteractionResponse, SlashCommandBuilder, EmbedBuilder, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, userMention, ButtonStyle } from "discord.js";
 import { SlashCommand } from "../types";
 import  mongoose from "mongoose";
 import PlantDB from "../schemas/Plant";
@@ -33,7 +33,7 @@ const command : SlashCommand = {
             .setColor('Green')
             .setTitle("Plants In Progress");
 
-            const menu = new SelectMenuBuilder()
+            const menu = new StringSelectMenuBuilder()
             .setCustomId(interaction.user.id)
             .setPlaceholder("No Plant")
 
@@ -72,7 +72,7 @@ const command : SlashCommand = {
 
             // Button for each option, not for buildings
 
-            const firstRow = new ActionRowBuilder<SelectMenuBuilder>()
+            const firstRow = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(menu)
 
             interaction.editReply({embeds: [nembed], components: [firstRow, secRow]})

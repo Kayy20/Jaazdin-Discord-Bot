@@ -1,4 +1,4 @@
-import { InteractionResponse, SlashCommandBuilder, EmbedBuilder, userMention, ButtonBuilder, ActionRowBuilder, ButtonStyle, SelectMenuBuilder, AnyComponentBuilder} from "discord.js";
+import { InteractionResponse, SlashCommandBuilder, EmbedBuilder, userMention, ButtonBuilder, ActionRowBuilder, ButtonStyle, StringSelectMenuBuilder, AnyComponentBuilder} from "discord.js";
 import { SlashCommand } from "../types";
 import  mongoose from "mongoose";
 import ItemDB from "../schemas/Item";
@@ -35,7 +35,7 @@ const command : SlashCommand = {
             .setColor('Aqua')
             .setTitle("Items In Progress");
 
-            const menu = new SelectMenuBuilder()
+            const menu = new StringSelectMenuBuilder()
             .setCustomId(interaction.user.id)
             .setPlaceholder("No Item")
 
@@ -78,7 +78,7 @@ const command : SlashCommand = {
 
             // Button for each option, not for buildings
 
-            const firstRow = new ActionRowBuilder<SelectMenuBuilder>()
+            const firstRow = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(menu)
 
             interaction.editReply({embeds: [nembed], components: [firstRow, secRow]})

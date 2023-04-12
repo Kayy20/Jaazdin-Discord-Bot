@@ -138,7 +138,7 @@ let type = 0; // 0 = nothing, 1 = building, 2 = plant, 3 = item
 
 client.on('interactionCreate', async (interaction: Interaction): Promise<void> => {
 
-    if (interaction.isSelectMenu()) {
+    if (interaction.isStringSelectMenu()) {
         if (!interaction.customId.endsWith(interaction.user.id)){
             interaction.reply({
                 content: "Touch that again and you'll get fed to the basement tree.",
@@ -155,6 +155,10 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
         } catch (e){
             // No time... meaning not a plant kek
         }
+
+        interaction.reply({content: `${name} Selected`});
+        interaction.deleteReply();
+
     }
     
     if (interaction.isButton()){
@@ -166,11 +170,10 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
             });
             return;
         }
-
         // set up the drop down menu
-        switch (interaction.customId[0].split('-')){
-            case ["building"]:
-                // Get the building from the Database
+        switch (interaction.customId.split('-')[0]){
+            case "building": 
+            // Get the building from the Database
                 const foundBuilding = await BuildingDB.findOne({name: name});
                 if (!foundBuilding) return; // Just to say if there is no found building
                 
@@ -257,7 +260,7 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                 }
 
                 break;
-            case ["plant"]:
+            case "plant":
                 // Get the plant from the Database
                 const foundPlant = await PlantDB.findOne({name: name, time: time, user: user});
                 if (!foundPlant) return; // Just to say if there is no found building
@@ -331,7 +334,7 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                     
                 }
                 break;
-            case ["item"]:
+            case "item":
                 // Get the item from the Database
                 const foundItem = await ItemDB.findOne({name: name})
                 if (!foundItem) return;
@@ -411,7 +414,7 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
 
                     interaction.channel?.send({content: userMention(foundItem.user), embeds: [embed]})
 
-                    BuildingDB.deleteOne({name: foundItem.name}).exec();
+                    ItemDB.deleteOne({name: foundItem.name}).exec();
 
                     interaction.reply({content: `${name} Updated`})
                     interaction.deleteReply();
@@ -425,9 +428,6 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
 
 
         interaction.message.delete();
-        name = "";
-        time = 0;
-        user = "";
 
     }
 })
