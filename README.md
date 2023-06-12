@@ -56,8 +56,3 @@ Made sure to go into the `package.json` file on the OCI and make the following c
   },
 ...
 ```
-
-
-
-
-Again - Huge thanks to [MerricaN41](https://github.com/MericcaN41) for creating the template that I utilized, and hopefully others can too.
