@@ -69,7 +69,10 @@ async function SendUpdate() {
         if (doc.time == 0) {
             pings += userMention(doc.user);
             finishedPlants += `${userMention(doc.user)} fresh harvest of ${doc.name}!\n`;
-            PlantDB.deleteOne({name: doc.name}).exec();
+            if(doc.repeatable) {
+                doc.time = doc.repeatTime;
+            }
+            else PlantDB.deleteOne({name: doc.name}).exec();
         }
         else {
             updatedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;

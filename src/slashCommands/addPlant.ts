@@ -25,6 +25,12 @@ const command : SlashCommand = {
             .setDescription("The user you want to mention")
             .setRequired(true)
     })
+    .addUserOption(option => {
+        return option
+            .setName("repeatable?")
+            .setDescription("If it will automatically restart, true or false")
+            .setRequired(true)
+    })
     ,
     execute: async (interaction) => {
         // Put all this information into the db
@@ -45,6 +51,8 @@ const command : SlashCommand = {
                 name: interaction.options.get("name")?.value, 
                 time: interaction.options.get("time")?.value,
                 user: interaction.options.get("user")?.value,
+                repeatable: interaction.options.get("repeatable?")?.value,
+                repeatTime: interaction.options.get("time")?.value,
             })
 
             await building.save();
