@@ -63,6 +63,7 @@ async function SendUpdate() {
     
     let finishedPlants = "";
     let updatedPlants = "";
+    let readdedPlants = "";
     // update each plant
     for await (const doc of PlantDB.find()) {
         doc.time -= 1;
@@ -71,6 +72,8 @@ async function SendUpdate() {
             finishedPlants += `${userMention(doc.user)} fresh harvest of ${doc.name}!\n`;
             if(doc.repeatable) {
                 doc.time = doc.repeatTime;
+                readdedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;
+                await doc.save();
             }
             else PlantDB.deleteOne({name: doc.name}).exec();
         }
@@ -119,6 +122,10 @@ async function SendUpdate() {
                 {
                     name: "Plants In Progress",
                     value: updatedPlants == "" ? "None" : updatedPlants
+                },
+                {
+                    name: "Readded Plants",
+                    value: readdedPlants == "" ? "None" : readdedPlants
                 },
                 {
                     name: "Finished Items",
