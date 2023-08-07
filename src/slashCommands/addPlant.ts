@@ -27,7 +27,7 @@ const command : SlashCommand = {
     })
     .addUserOption(option => {
         return option
-            .setName("repeatable?")
+            .setName("repeatable")
             .setDescription("If it will automatically restart, true or false")
             .setRequired(true)
     })

@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, Interaction, userMention, EmbedBuilder, TextChannel} from "discord.js";
+import { Client, GatewayIntentBits, Collection, Interaction, userMention, EmbedBuilder, TextChannel, UserManager} from "discord.js";
 const { Guilds, MessageContent, GuildMessages, GuildMembers } = GatewayIntentBits
 const client = new Client({intents:[Guilds, MessageContent, GuildMessages, GuildMembers]})
 import { Command, SlashCommand } from "./types";
@@ -71,7 +71,8 @@ async function SendUpdate() {
             pings += userMention(doc.user);
             finishedPlants += `${userMention(doc.user)} fresh harvest of ${doc.name}!\n`;
             if(doc.repeatable) {
-                doc.time = doc.repeatTime;
+                if (doc.repeatTime)
+                    doc.time = doc.repeatTime;
                 readdedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;
                 await doc.save();
             }
@@ -281,13 +282,28 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
 
                     if (foundPlant.time <= 0) // Plant is done!
                     {
-                        let embed = new EmbedBuilder()
-                        .setTitle(foundPlant.name)
-                        .setDescription(`${userMention(foundPlant.user)}, fresh harvest of ${foundPlant.name}!`)
+                        if (foundPlant.repeatable && foundPlant.repeatTime){
+                            foundPlant.time = foundPlant.repeatTime;
 
-                        interaction.channel?.send({content: userMention(foundPlant.user), embeds: [embed]})
+                            await foundPlant.save();
 
-                        PlantDB.deleteOne({name: foundPlant.name}).exec();
+                            let embed = new EmbedBuilder()
+                            .setTitle(foundPlant.name)
+                            .setDescription(`${userMention(foundPlant.user)}, fresh harvest of ${foundPlant.name} as well as being replanted!`)
+    
+                            interaction.channel?.send({content: userMention(foundPlant.user), embeds: [embed]})
+
+                        } else {
+                            let embed = new EmbedBuilder()
+                            .setTitle(foundPlant.name)
+                            .setDescription(`${userMention(foundPlant.user)}, fresh harvest of ${foundPlant.name}!`)
+    
+                            interaction.channel?.send({content: userMention(foundPlant.user), embeds: [embed]})
+    
+                            
+    
+                            PlantDB.deleteOne({name: foundPlant.name}).exec();
+                        }
 
                     } else
                     {
@@ -315,13 +331,31 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
 
                     if (foundPlant.time <= 0) // Plant is done!
                     {
-                        let embed = new EmbedBuilder()
-                        .setTitle(foundPlant.name)
-                        .setDescription(`${userMention(foundPlant.user)}, fresh harvest of ${foundPlant.name}!`)
 
-                        interaction.channel?.send({content: userMention(foundPlant.user), embeds: [embed]})
+                        if (foundPlant.repeatable && foundPlant.repeatTime){
+                            foundPlant.time = foundPlant.repeatTime;
 
-                        PlantDB.deleteOne({name: foundPlant.name}).exec();
+                            await foundPlant.save();
+
+                            let embed = new EmbedBuilder()
+                            .setTitle(foundPlant.name)
+                            .setDescription(`${userMention(foundPlant.user)}, fresh harvest of ${foundPlant.name} as well as being replanted!`)
+    
+                            interaction.channel?.send({content: userMention(foundPlant.user), embeds: [embed]})
+
+                        } else {
+                            let embed = new EmbedBuilder()
+                            .setTitle(foundPlant.name)
+                            .setDescription(`${userMention(foundPlant.user)}, fresh harvest of ${foundPlant.name}!`)
+    
+                            interaction.channel?.send({content: userMention(foundPlant.user), embeds: [embed]})
+    
+                            
+    
+                            PlantDB.deleteOne({name: foundPlant.name}).exec();
+                        }
+
+                        
                     } else
                     {
                         await foundPlant.save();
@@ -342,6 +376,28 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                     interaction.reply({content: `${name} Updated`})
                     interaction.deleteReply();
                     
+                }
+                if (interaction.customId.split('-')[1] == 'stoprep')
+                {
+                    foundPlant.repeatable = false;
+                    let embed = new EmbedBuilder()
+                    .setTitle(foundPlant.name)
+                    .setDescription("You are no longer repeating this plant on weekly resets!");
+
+                    await foundPlant.save();
+
+                    interaction.channel?.send({content: userMention(foundPlant.user), embeds: [embed]})
+                }
+                if (interaction.customId.split('-')[1] == 'startrep')
+                {
+                    foundPlant.repeatable = true;
+                    let embed = new EmbedBuilder()
+                    .setTitle(foundPlant.name)
+                    .setDescription("You are now repeating this plant on weekly resets!");
+
+                    await foundPlant.save();
+
+                    interaction.channel?.send({content: userMention(foundPlant.user), embeds: [embed]})
                 }
                 break;
             case "item":

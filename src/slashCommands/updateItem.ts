@@ -22,7 +22,7 @@ const command : SlashCommand = {
 
             const buildings = await ItemDB.find({});
 
-            if (!buildings){
+            if (!buildings || buildings.length == 0){
                 interaction.editReply({content: "There are no items to update!"})
                 setTimeout(function() {
                     interaction.deleteReply();
@@ -42,7 +42,7 @@ const command : SlashCommand = {
             // Selectable List for buildings
             for (const building of buildings) {
                 let memb = await interaction.guild?.members.fetch(building.user);
-
+                console.log(building.name);
                 nembed.addFields(
                     {
                     name: building.name,

@@ -22,7 +22,7 @@ const command : SlashCommand = {
 
             const buildings = await BuildingDB.find({});
 
-            if (!buildings){
+            if (!buildings || buildings.length == 0){
                 interaction.editReply({content: "There are no buildings to update!"})
                 setTimeout(function() {
                     interaction.deleteReply();
@@ -45,13 +45,13 @@ const command : SlashCommand = {
 
                 nembed.addFields(
                     {
-                    name: building.name,
+                    name: building.name.substring(0,50),
                     value: `Tier: ${building.tier} \t Weeks Left: ${building.time} \t Owner: ${userMention(building.user)}`
                     }
                 )
                 menu.addOptions(
                     {
-                        label: `${building.name}, Weeks Left: ${building.time}, Owner: ${memb?.displayName}`,
+                        label: `${building.name.substring(0, 50)}, Weeks Left: ${building.time}, Owner: ${memb?.displayName}`,
                         value: building.name
                     }
                 )
@@ -86,6 +86,7 @@ const command : SlashCommand = {
 
         } catch (error) {
             interaction.editReply({content: "Something went wrong..."});
+            console.log(error);
         }
     }, cooldown: 10
 }

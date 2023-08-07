@@ -20,7 +20,7 @@ const command : SlashCommand = {
 
             const buildings = await PlantDB.find({});
 
-            if (!buildings){
+            if (!buildings || buildings.length == 0){
                 interaction.editReply({content: "There are no plants to update!"})
                 setTimeout(function() {
                     interaction.deleteReply();
@@ -68,6 +68,15 @@ const command : SlashCommand = {
                     .setCustomId(`plant-2week-${interaction.user.id}`)
                     .setStyle(ButtonStyle.Primary)
                     ,
+                    new ButtonBuilder()
+                    .setLabel("Stop Repeat")
+                    .setCustomId(`plant-stoprep-${interaction.user.id}`)
+                    .setStyle(ButtonStyle.Primary)
+                    ,
+                    new ButtonBuilder()
+                    .setLabel("Start Repeat")
+                    .setCustomId(`plant-startrep-${interaction.user.id}`)
+                    .setStyle(ButtonStyle.Primary)
                 ])
 
             // Button for each option, not for buildings

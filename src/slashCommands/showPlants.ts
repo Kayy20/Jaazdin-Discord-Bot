@@ -44,7 +44,7 @@ const command : SlashCommand = {
                     embed.addFields(
                         {
                             name: building.name,
-                            value: `Weeks Left: ${building.time} \t Owner: ${userMention(building.user)}`
+                            value: `Weeks Left: ${building.time} \t Owner: ${userMention(building.user)} \t Repeatable? ${building.repeatable}`
                         }
                     )
                 }
