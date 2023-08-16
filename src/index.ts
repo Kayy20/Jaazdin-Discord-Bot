@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, Interaction, userMention, EmbedBuilder, TextChannel, UserManager} from "discord.js";
+import { Client, GatewayIntentBits, Collection, Interaction, userMention, EmbedBuilder, TextChannel, UserManager, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle} from "discord.js";
 const { Guilds, MessageContent, GuildMessages, GuildMembers } = GatewayIntentBits
 const client = new Client({intents:[Guilds, MessageContent, GuildMessages, GuildMembers]})
 import { Command, SlashCommand } from "./types";
@@ -11,6 +11,8 @@ import BuildingDB from "./schemas/Building";
 import ChannelDB from "./schemas/Channel";
 import PlantDB from "./schemas/Plant";
 import ItemDB from "./schemas/Item";
+import BirthdayDB from "./schemas/Birthday";
+import { buffer } from "stream/consumers";
 config()
 
 client.slashCommands = new Collection<string, SlashCommand>()
@@ -100,6 +102,9 @@ async function SendUpdate() {
         }
     }
 
+
+    // Find the days of the week and apply them to the birthdays here //
+
     // Find Channel
     const channel = await client.channels.cache.get(foundBuilding.channel.toString());
         
@@ -138,14 +143,16 @@ async function SendUpdate() {
                 }
             )
             .setTimestamp();
+
+
+
     if (channel instanceof TextChannel)
          channel.send({content: pings, embeds: [embed]});
 }
 
 let name = ""; // used for all types
-let time = 0; // only used for plants
+let time = 0; // only used for plants/birthday
 let user = ""; // only used for plants
-let type = 0; // 0 = nothing, 1 = building, 2 = plant, 3 = item
 
 client.on('interactionCreate', async (interaction: Interaction): Promise<void> => {
 
@@ -160,11 +167,11 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
         
         let thing = interaction.values[0].split('-');
         name = thing[0];
+
         try {
             time = parseInt(thing[1]);
             user = thing[2];
-        } catch (e){
-            // No time... meaning not a plant kek
+        } catch (e) {// No time... meaning not a plant kek
         }
 
         interaction.reply({content: `${name} Selected`});
@@ -487,13 +494,155 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                 }
 
                 break;
-        }
+            case "birthday":
+                // Get the item from the Database
+                const foundDate = await BirthdayDB.findOne({name: name})
+                if (!foundDate) return;
+                if (interaction.customId.split('-')[1] == 'date') // Get user input to change the date
+                {
 
+                    const modal = new ModalBuilder()
+                    .setTitle(`Update ${foundDate.name}'s Birthdate!`)
+                    .setCustomId(`birthdate-${foundDate.name}-${interaction.user.id}`)
 
-        
+                    const newDate = new TextInputBuilder()
+                    .setLabel("Input New Birthdate")
+                    .setCustomId('newDate')
+                    .setMaxLength(5).setMinLength(5)
+                    .setRequired(true)
+                    .setPlaceholder("Input Birthdate Format: MM/DD")
+                    .setStyle(TextInputStyle.Short)
 
+                    const firstRow = new ActionRowBuilder<TextInputBuilder>().addComponents(newDate);
+
+                    modal.addComponents(firstRow)
+
+                    console.log("Sending Modal");
+
+                    await interaction.showModal(modal);
+                    
+                }
+                if (interaction.customId.split('-')[1] == 'age') // Change Age
+                {
+                    const modal = new ModalBuilder()
+                    .setTitle(`Update ${foundDate.name}'s Birthdate!`)
+                    .setCustomId(`age-${foundDate.name}-${interaction.user.id}`)
+
+                    const newDate = new TextInputBuilder()
+                    .setLabel("Input New Age")
+                    .setCustomId('newAge')
+                    .setMaxLength(4).setMinLength(1)
+                    .setRequired(true)
+                    .setPlaceholder("Input Age (Integer)")
+                    .setStyle(TextInputStyle.Short)
+
+                    const firstRow = new ActionRowBuilder<TextInputBuilder>().addComponents(newDate);
+
+                    modal.addComponents(firstRow)
+                    await interaction.showModal(modal);
+                    
+                }
+                if (interaction.customId.split('-')[1] == 'delete') // Finish Building
+                {
+                    let embed = new EmbedBuilder()
+                    .setTitle(foundDate.name)
+                    .setDescription(`${userMention(foundDate.user)}, ${foundDate.name} is now birthday-less!`)
+
+                    interaction.channel?.send({content: userMention(foundDate.user), embeds: [embed]})
+
+                    BirthdayDB.deleteOne({name: foundDate.name}).exec();
+
+                    interaction.reply({content: `${name} Updated`})
+                    interaction.deleteReply();
+                }
+
+                break;
+            }
 
         interaction.message.delete();
 
+    }
+
+    if (interaction.isModalSubmit()){
+
+        switch (interaction.customId.split('-')[0]){
+            case "birthdate":
+                const foundDate = await BirthdayDB.findOne({name: interaction.customId.split('-')[1]})
+                if (!foundDate) return;
+
+                const info = interaction.fields.getTextInputValue('newDate')
+
+                let month = foundDate.date.getMonth();
+                let day = foundDate.date.getDate();
+                
+                try{
+                    month = parseInt(info.split('/')[0])
+                    day = parseInt(info.split('/')[1])
+                    console.log("Month: " + month + ", Day: " + day)
+                    if (month < 1 || month > 12 || day < 1)
+                    interaction.reply("Invalid Input, try using numbers that are valid! \n Months are 1-12, Days are 1-31 (depending on the month)")
+                    if (month < 8) {
+                        if (day > (month % 2 == 0 ? month == 2 ? 28 : 30 : 31))
+                            interaction.reply("Invalid Input, try using numbers that are valid! \n Months are 1-12, Days are 1-31 (depending on the month)")
+                    } else {
+                        if (day > (month % 2 == 0 ? 31 : 30))
+                            interaction.reply("Invalid Input, try using numbers that are valid! \n Months are 1-12, Days are 1-31 (depending on the month)")
+                    }
+
+                } catch (e){
+                    // Something went wrong, get them to start over!
+                    interaction.reply("Invalid Input, try using numbers that are valid! \n Months are 1-12, Days are 1-31 (depending on the month)")
+                }
+
+                foundDate.date.setFullYear(2000);
+                foundDate.date.setMonth(month - 1);
+                foundDate.date.setDate(day);
+
+                console.log(foundDate.date);
+
+                await foundDate.save();
+                //await BirthdayDB.replaceOne()
+
+                let embed = new EmbedBuilder()
+                .setTitle(`${foundDate.name}'s New Birthday!`)
+                .setColor('Blurple')
+                .setDescription(`New Birthday:  ${foundDate.date.getMonth() + 1 < 10 ? "0"+(foundDate.date.getMonth() + 1) : foundDate.date.getMonth() + 1}/${foundDate.date.getDate() < 10 ? "0"+foundDate.date.getDate() : foundDate.date.getDate()}`)
+                
+
+                interaction.reply({content: userMention(foundDate.user), embeds: [embed]});
+                break;
+            case "age":
+                const foundAge = await BirthdayDB.findOne({name: interaction.customId.split('-')[1]})
+                if (!foundAge) return;
+
+                const info1 = interaction.fields.getTextInputValue('newAge')
+
+                let age = foundAge.age;
+                
+                try{
+                    age = parseInt(info1)
+
+                    if (age < 1 || !age)
+                        throw new Error("Age not valid");
+
+                } catch (e){
+                    // Something went wrong, get them to start over!
+                    interaction.reply("Invalid Input, try using numbers that are valid! \n Age needs to be greater than 0!")
+                }
+
+                foundAge.age = age;
+
+                await foundAge.save();
+
+                let embed1 = new EmbedBuilder()
+                .setTitle(`${foundAge.name}'s New Age!`)
+                .setColor('Blurple')
+                .setDescription(`New Age:  ${foundAge.age}`)
+                
+                interaction.reply({content: userMention(foundAge.user), embeds: [embed1]});
+                break;
+        }
+        
+        
     }
 })

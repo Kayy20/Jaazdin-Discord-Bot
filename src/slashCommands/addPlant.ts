@@ -25,7 +25,7 @@ const command : SlashCommand = {
             .setDescription("The user you want to mention")
             .setRequired(true)
     })
-    .addUserOption(option => {
+    .addBooleanOption(option => {
         return option
             .setName("repeatable")
             .setDescription("If it will automatically restart, true or false")
