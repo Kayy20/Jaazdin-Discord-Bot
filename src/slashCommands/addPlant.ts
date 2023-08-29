@@ -51,7 +51,7 @@ const command : SlashCommand = {
                 name: interaction.options.get("name")?.value, 
                 time: interaction.options.get("time")?.value,
                 user: interaction.options.get("user")?.value,
-                repeatable: interaction.options.get("repeatable?")?.value,
+                repeatable: interaction.options.get("repeatable")?.value,
                 repeatTime: interaction.options.get("time")?.value,
             })
 
