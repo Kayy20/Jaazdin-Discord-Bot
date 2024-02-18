@@ -767,6 +767,34 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                 const tier = interaction.fields.getTextInputValue('tier');
                 const roll = interaction.fields.getTextInputValue('roll');
 
+                try{
+                    let q = parseInt(tier)
+
+                    if (q > 7 || !q || q < 2){
+
+                        interaction.reply({content: "Invalid Input, try using numbers that are valid! \nTier needs to be between 3 and 7", ephemeral: true})
+                        return;
+                    }
+
+                } catch (e){
+                    // Something went wrong, get them to start over!
+                    interaction.reply({content: "Invalid Input, try using numbers that are valid! \nRoll needs to be between 1 and 100!", ephemeral: true})
+                }
+
+                try{
+                    let w = parseInt(roll)
+
+                    if (w > 100 || !w || w < 1)
+                    {
+                        interaction.reply({content: "Invalid Input, try using numbers that are valid! \nRoll needs to be between 1 and 100!", ephemeral: true})
+                        return;
+                    }
+
+                } catch (e){
+                    // Something went wrong, get them to start over!
+                    interaction.reply({content: "Invalid Input, try using numbers that are valid! \nRoll needs to be between 1 and 100!", ephemeral: true})
+                }
+
                 let link = "?roll="+roll+"&tier="+tier+"&job="+interaction.customId.split('-')[1].split(' ').join('-');
                 
                 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
