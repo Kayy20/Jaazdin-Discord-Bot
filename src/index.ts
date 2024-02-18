@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, Interaction, userMention, EmbedBuilder, TextChannel, UserManager, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle} from "discord.js";
+import { Client, GatewayIntentBits, Collection, Interaction, userMention, EmbedBuilder, TextChannel, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder} from "discord.js";
 const { Guilds, MessageContent, GuildMessages, GuildMembers } = GatewayIntentBits
 const client = new Client({intents:[Guilds, MessageContent, GuildMessages, GuildMembers]})
 import { Command, SlashCommand } from "./types";
@@ -12,7 +12,6 @@ import ChannelDB from "./schemas/Channel";
 import PlantDB from "./schemas/Plant";
 import ItemDB from "./schemas/Item";
 import BirthdayDB from "./schemas/Birthday";
-import { buffer } from "stream/consumers";
 config()
 
 client.slashCommands = new Collection<string, SlashCommand>()
@@ -148,6 +147,90 @@ async function SendUpdate() {
 
     if (channel instanceof TextChannel)
          channel.send({content: pings, embeds: [embed]});
+
+
+
+    // Ship stuff
+    var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
+    var req = new XMLHttpRequest();
+    req.open("GET", "http://jaazdinapi.mygamesonline.org/Commands/ShowBoats.php", true);
+    req.onload = function(){
+        //console.log("Connected! --> " + this.responseText);
+        let s = JSON.parse(this.responseText);
+        
+        let notTown = s.boatsNotInTown; // Array of information of boats not in town
+        // {"boatsNotInTown":[{"boatName":"test","weeksLeft":"1"}]}
+        let inTown = s.boatsInTown; // Array of information of boats in Town
+
+
+        const embed1 = new EmbedBuilder()
+        .setColor('Aqua')
+        .setTitle("Boat Information")
+        .setTimestamp();
+
+        for (const i of inTown){
+
+            let m = i.jobs.split(' ');
+            let str = "";
+            for (const a of m){
+                str += a + ", ";
+            }
+            str = str.slice(0, -2);
+
+            str += " have their gp wage die amount +1.";
+
+
+            embed1.addFields({name: i.boatName + "(Time till Departure: " + i.weeksLeft + " weeks)", value: str})
+
+            if (i.tier2Ability != ""){
+                embed1.addFields({name: "Additional Feature!", value: i.tier2Ability});
+            }
+
+            embed1.addFields({name: "Goods", value: " "});
+
+            const targetLength = Math.ceil(i.shipment.length / 3);
+
+            const firstArray = i.shipment.slice(0, targetLength);
+            const secondArray = i.shipment.slice(targetLength, targetLength * 2 - 1);
+            const thirdArray = i.shipment.slice(targetLength * 2 - 1);
+            // First Array
+            let mess = "";
+            for (const j of firstArray) 
+                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+
+            embed1.addFields({name: " ", value: mess, inline: true})
+            // Second Array
+            mess = "";
+            for (const j of secondArray) 
+                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+
+            embed1.addFields({name: " ", value: mess, inline: true})
+            // Third Array
+            mess = "";
+            for (const j of thirdArray) 
+                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+
+            embed1.addFields({name: " ", value: mess, inline: true})
+        }
+        
+        if (notTown.length > 0){
+            let mess = ""
+            let mess1 = ""
+            for (const i of notTown){
+                mess += i.boatName + "\n";
+                mess1 += i.weeksLeft + "\n"
+            }
+            embed1.addFields({name: "Boats at Sea", value: mess, inline: true})
+            embed1.addFields({name: "Time till arrival", value: mess1, inline: true})
+        }
+
+        if (channel instanceof TextChannel) {
+            channel.send({embeds: [embed1]});
+        }
+    }
+
+    req.send();
+
 }
 
 let name = ""; // used for all types
@@ -188,6 +271,8 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
             });
             return;
         }
+
+        
         // set up the drop down menu
         switch (interaction.customId.split('-')[0]){
             case "building": 
@@ -557,9 +642,46 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                 }
 
                 break;
-            }
+            case "job":
+                if (interaction.customId.split('-')[1] == 'cancel') {
+                    // Delete Reply
+                } 
+                else if (interaction.customId.split('-')[1] == 'continue'){
+                    
+                    const modal = new ModalBuilder()
+                        .setCustomId('job-'+ name)
+                        .setTitle('Job Roll for ' + name+'!')
+                    
+                    const tier = new TextInputBuilder()
+                        .setMaxLength(1)
+                        .setMinLength(1)
+                        .setPlaceholder("1")
+                        .setCustomId('tier')
+                        .setLabel("Tier")
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(true)
+        
+                    const roll = new TextInputBuilder()
+                        .setMaxLength(3)
+                        .setMinLength(1)
+                        .setPlaceholder("0")
+                        .setCustomId('roll')
+                        .setLabel("What did you roll?")
+                        .setStyle(TextInputStyle.Short)
+                        .setRequired(true)
+        
+                    const ar1 = new ActionRowBuilder<TextInputBuilder>().addComponents(tier);
+                    const ar2 = new ActionRowBuilder<TextInputBuilder>().addComponents(roll);
 
-        interaction.message.delete();
+                    modal.addComponents(ar1, ar2);
+
+                    await interaction.showModal(modal);
+                }             
+                
+                break;
+            }
+            interaction.message.delete();
+        
 
     }
 
@@ -640,6 +762,33 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                 .setDescription(`New Age:  ${foundAge.age}`)
                 
                 interaction.reply({content: userMention(foundAge.user), embeds: [embed1]});
+                break;
+            case "job":
+                const tier = interaction.fields.getTextInputValue('tier');
+                const roll = interaction.fields.getTextInputValue('roll');
+
+                let link = "?roll="+roll+"&tier="+tier+"&job="+interaction.customId.split('-')[1].split(' ').join('-');
+                
+                var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
+                var req = new XMLHttpRequest();
+                req.open("GET", "http://jaazdinapi.mygamesonline.org/Commands/ProfessionRoll.php"+link, true);
+                req.onload = function(){
+                    //console.log("Connected! --> " + this.responseText);
+                    let s = JSON.parse(this.responseText);
+                    
+                    const emb = new EmbedBuilder()
+                        .setTitle("Rewards")
+                        .setColor("Random")
+                        .addFields(
+                            {
+                                name: " ",
+                                value: s.message
+                            }
+                        )
+                    interaction.reply({content: userMention(interaction.user.id), embeds: [emb]})
+                }
+
+                req.send();
                 break;
         }
         

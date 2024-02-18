@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const ChannelSchema = new Schema({
+    name: {required:true, type: String},
     channel: {required:true, type: String},
 },
 { 

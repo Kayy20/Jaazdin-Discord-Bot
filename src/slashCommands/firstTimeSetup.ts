@@ -14,6 +14,12 @@ const command : SlashCommand = {
             .setDescription("Channel to send the weekly message to")
             .setRequired(true);
     })
+    .addStringOption(option => {
+        return option
+            .setName("name")
+            .setDescription("Name the Channel")
+            .setRequired(true);
+    })
     ,
     execute: async (interaction) => {
         // Put all this information into the db
@@ -38,6 +44,7 @@ const command : SlashCommand = {
             }
 
             let channel = new ChannelDB({
+                name: interaction.options.get("name")?.value,
                 channel: interaction.options.get("channel")?.value,
             })
 
