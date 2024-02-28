@@ -153,7 +153,7 @@ async function SendUpdate() {
     // Ship stuff
     var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
     var req = new XMLHttpRequest();
-    req.open("GET", "http://jaazdinapi.mygamesonline.org/Commands/ShowBoats.php", true);
+    req.open("GET", "http://jaazdinapi.mygamesonline.org/Commands/UpdateDocks.php", true);
     req.onload = function(){
         //console.log("Connected! --> " + this.responseText);
         let s = JSON.parse(this.responseText);
@@ -168,50 +168,51 @@ async function SendUpdate() {
         .setTitle("Boat Information")
         .setTimestamp();
 
-        for (const i of inTown){
+        if (inTown.length > 0)
+            for (const i of inTown){
 
-            let m = i.jobs.split(' ');
-            let str = "";
-            for (const a of m){
-                str += a + ", ";
+                let m = i.jobs.split(' ');
+                let str = "";
+                for (const a of m){
+                    str += a + ", ";
+                }
+                str = str.slice(0, -2);
+
+                str += " have their gp wage die amount +1.";
+
+
+                embed1.addFields({name: i.boatName + "(Time till Departure: " + i.weeksLeft + " weeks)", value: str})
+
+                if (i.tier2Ability != ""){
+                    embed1.addFields({name: "Additional Feature!", value: i.tier2Ability});
+                }
+
+                embed1.addFields({name: "Goods", value: " "});
+
+                const targetLength = Math.ceil(i.shipment.length / 3);
+
+                const firstArray = i.shipment.slice(0, targetLength);
+                const secondArray = i.shipment.slice(targetLength, targetLength * 2 - 1);
+                const thirdArray = i.shipment.slice(targetLength * 2 - 1);
+                // First Array
+                let mess = "";
+                for (const j of firstArray) 
+                    mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+
+                embed1.addFields({name: " ", value: mess, inline: true})
+                // Second Array
+                mess = "";
+                for (const j of secondArray) 
+                    mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+
+                embed1.addFields({name: " ", value: mess, inline: true})
+                // Third Array
+                mess = "";
+                for (const j of thirdArray) 
+                    mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+
+                embed1.addFields({name: " ", value: mess, inline: true})
             }
-            str = str.slice(0, -2);
-
-            str += " have their gp wage die amount +1.";
-
-
-            embed1.addFields({name: i.boatName + "(Time till Departure: " + i.weeksLeft + " weeks)", value: str})
-
-            if (i.tier2Ability != ""){
-                embed1.addFields({name: "Additional Feature!", value: i.tier2Ability});
-            }
-
-            embed1.addFields({name: "Goods", value: " "});
-
-            const targetLength = Math.ceil(i.shipment.length / 3);
-
-            const firstArray = i.shipment.slice(0, targetLength);
-            const secondArray = i.shipment.slice(targetLength, targetLength * 2 - 1);
-            const thirdArray = i.shipment.slice(targetLength * 2 - 1);
-            // First Array
-            let mess = "";
-            for (const j of firstArray) 
-                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-            embed1.addFields({name: " ", value: mess, inline: true})
-            // Second Array
-            mess = "";
-            for (const j of secondArray) 
-                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-            embed1.addFields({name: " ", value: mess, inline: true})
-            // Third Array
-            mess = "";
-            for (const j of thirdArray) 
-                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-            embed1.addFields({name: " ", value: mess, inline: true})
-        }
         
         if (notTown.length > 0){
             let mess = ""
