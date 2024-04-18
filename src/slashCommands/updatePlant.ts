@@ -12,7 +12,7 @@ const command : SlashCommand = {
         // Returns with a menu either to speed up a week, or auto complete
         try {
             // Construct the information
-            await interaction.deferReply({});
+            //await interaction.deferReply({});
 
             if (mongoose.connection.readyState === 0) throw new Error("Database not connected");
 
@@ -21,25 +21,41 @@ const command : SlashCommand = {
             const buildings = await PlantDB.find({});
 
             if (!buildings || buildings.length == 0){
-                interaction.editReply({content: "There are no plants to update!"})
+                interaction.reply({content: "There are no plants to update!"})
                 setTimeout(function() {
                     interaction.deleteReply();
                 }, 5000)
                 return
             }
 
+            const embeds = [];
+            const menus = [];
 
             let nembed = new EmbedBuilder()
             .setColor('Green')
             .setTitle("Plants In Progress");
 
-            const menu = new StringSelectMenuBuilder()
-            .setCustomId(interaction.user.id)
+            let menu = new StringSelectMenuBuilder()
+            .setCustomId("0-"+interaction.user.id)
             .setPlaceholder("No Plant")
-
+            let count = 0;
             // Selectable List for buildings
             for (const building of buildings) {
                 let memb = await interaction.guild?.members.fetch(building.user);
+
+                
+
+                if (count == 25) {
+                    embeds.push(nembed);
+                    nembed = new EmbedBuilder()
+                    .setColor('Green')
+                    .setTitle("Plants In Progress Continued...");
+                    count = 0;
+                    menus.push(menu);
+                    menu = new StringSelectMenuBuilder()
+                    .setCustomId(menus.length+"-"+interaction.user.id)
+                    .setPlaceholder("No Plant continued...")
+                }
 
                 nembed.addFields(
                     {
@@ -49,12 +65,15 @@ const command : SlashCommand = {
                 )
                 menu.addOptions(
                     {
-                        label: `${building.name}, Weeks Left: ${building.time}, Owner: ${memb?.displayName}`,
+                        label: `${building.name.substring(0, 40)}, Weeks Left: ${building.time}, Owner: ${memb?.displayName}`,
                         value: `${building.name}-${building.time}-${building.user}`
                     }
                 )
                 
+                count++;
             }
+            embeds.push(nembed);
+            menus.push(menu);
 
             const secRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
                 [
@@ -80,15 +99,17 @@ const command : SlashCommand = {
                 ])
 
             // Button for each option, not for buildings
+            const firstRow = [];
+            for (let i = 0; i < menus.length; i++) {
+                firstRow.push(new ActionRowBuilder<StringSelectMenuBuilder>()
+                .addComponents(menus[i]));
+            }
 
-            const firstRow = new ActionRowBuilder<StringSelectMenuBuilder>()
-            .addComponents(menu)
-
-            interaction.editReply({embeds: [nembed], components: [firstRow, secRow]})
+            interaction.reply({embeds: embeds, components: [...firstRow, secRow]})
             
 
         } catch (error) {
-            interaction.editReply({content: "Something went wrong..."});
+            interaction.reply({content: error.message});
         }
     }, cooldown: 10
 }

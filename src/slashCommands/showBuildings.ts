@@ -25,6 +25,8 @@ const command : SlashCommand = {
 
             const foundBuilding = await BuildingDB.find({});
 
+            const embeds = [];
+
             let embed = new EmbedBuilder()
             .setTitle("Buildings")
             .setColor('Red')
@@ -40,20 +42,30 @@ const command : SlashCommand = {
             }
             else 
             {
+                let count = 0;
                 for (const building of foundBuilding) {
+                    if (count == 25) { 
+                        embeds.push(embed);
+                        embed = new EmbedBuilder()
+                        .setTitle("Buildings Continued...")
+                        .setColor('Red')
+                        count = 0;
+                    }
                     embed.addFields(
                         {
                             name: building.name,
                             value: `Tier: ${building.tier} \t Weeks Left: ${building.time} \t Owner: ${userMention(building.user)}`
                         }
                     )
+                    count++;
                 }
+                embeds.push(embed);
             }
 
             // Insert a new entry into the collection
             //let res = await mongoose.connection.db.collection("Buildings").insertOne(docs);
             
-            interaction.editReply({embeds: [embed]});
+            interaction.editReply({embeds: embeds});
             
 
         } catch (error) {

@@ -25,6 +25,8 @@ const command : SlashCommand = {
 
             const foundBuilding = await ItemDB.find({});
 
+            const embeds = [];
+
             let embed = new EmbedBuilder()
             .setTitle("Items")
             .setColor('Purple')
@@ -40,14 +42,24 @@ const command : SlashCommand = {
             }
             else 
             {
+                let count = 0;
                 for (const building of foundBuilding) {
+                    if (count == 25){
+                        embeds.push(embed);
+                        embed = new EmbedBuilder()
+                        .setTitle("Items Continued...")
+                        .setColor('Purple')
+                        count = 0;
+                    }
                     embed.addFields(
                         {
                             name: building.name,
                             value: `Weeks Left: ${building.time} \t Owner: ${userMention(building.user)}`
                         }
                     )
+                    count++;
                 }
+                embeds.push(embed);
             }
 
             // Insert a new entry into the collection

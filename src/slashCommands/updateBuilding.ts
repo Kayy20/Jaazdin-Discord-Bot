@@ -30,19 +30,32 @@ const command : SlashCommand = {
                 return
             }
 
+            const embeds = [];
+            const menus = [];
 
             let nembed = new EmbedBuilder()
             .setColor('Aqua')
             .setTitle("Buildings In Progress");
 
-            const menu = new StringSelectMenuBuilder()
-            .setCustomId(interaction.user.id)
+            let menu = new StringSelectMenuBuilder()
+            .setCustomId("0-"+interaction.user.id)
             .setPlaceholder("No Building")
 
+            let count= 0;
             // Selectable List for buildings
             for (const building of buildings) {
                 let memb = await interaction.guild?.members.fetch(building.user);
-
+                if (count == 25) {
+                    embeds.push(nembed);
+                    nembed = new EmbedBuilder()
+                    .setColor('Aqua')
+                    .setTitle("Buildings In Progress");
+                    menus.push(menu);
+                    menu = new StringSelectMenuBuilder()
+                    .setCustomId(menus.length+"-"+interaction.user.id)
+                    .setPlaceholder("No Building continued...")
+                    count = 0;
+                }
                 nembed.addFields(
                     {
                     name: building.name.substring(0,50),
@@ -55,8 +68,10 @@ const command : SlashCommand = {
                         value: building.name
                     }
                 )
-                
+                count++;
             }
+            embeds.push(nembed);
+            menus.push(menu);
 
             const secRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
                 [
@@ -79,9 +94,9 @@ const command : SlashCommand = {
             // Button for each option, not for buildings
 
             const firstRow = new ActionRowBuilder<StringSelectMenuBuilder>()
-            .addComponents(menu)
+            .addComponents(menus)
 
-            interaction.editReply({embeds: [nembed], components: [firstRow, secRow]})
+            interaction.editReply({embeds: [...embeds], components: [firstRow, secRow]})
             
 
         } catch (error) {
