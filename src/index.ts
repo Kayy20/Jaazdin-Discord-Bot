@@ -189,30 +189,51 @@ async function SendUpdate() {
                 }
 
                 embed1.addFields({ name: "Goods", value: " " });
+                
+                
 
                 const targetLength = Math.ceil(i.shipment.length / 3);
 
-                const firstArray = i.shipment.slice(0, targetLength);
-                const secondArray = i.shipment.slice(targetLength, targetLength * 2 - 1);
-                const thirdArray = i.shipment.slice(targetLength * 2 - 1);
+                let firstArray = i.shipment.slice(0, targetLength);
+                let secondArray = i.shipment.slice(targetLength, targetLength * 2 - 1);
+                let thirdArray = i.shipment.slice(targetLength * 2 - 1);
+
+                switch (i.shipment.length) {
+                    case 1:
+                        firstArray = i.shipment.slice(0, 1);
+                        secondArray = [];
+                        thirdArray = [];
+                        break;
+                    case 2:
+                        firstArray = i.shipment.slice(0, 1);
+                        secondArray = i.shipment.slice(1, 2);
+                        thirdArray = [];
+                        break;
+                    case 3:
+                        firstArray = i.shipment.slice(0, 1);
+                        secondArray = i.shipment.slice(1, 2);
+                        thirdArray = i.shipment.slice(2, 3);
+                        break;
+                }
+
                 // First Array
                 let mess = "";
-                for (const j of firstArray)
+                for (const j of firstArray) 
                     mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-                embed1.addFields({ name: " ", value: mess, inline: true })
+                if (mess != "")
+                    embed1.addFields({name: " ", value: mess, inline: true})
                 // Second Array
                 mess = "";
-                for (const j of secondArray)
+                for (const j of secondArray) 
                     mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-                embed1.addFields({ name: " ", value: mess, inline: true })
+                if (mess != "")
+                    embed1.addFields({name: " ", value: mess, inline: true})
                 // Third Array
                 mess = "";
-                for (const j of thirdArray)
+                for (const j of thirdArray) 
                     mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-                embed1.addFields({ name: " ", value: mess, inline: true })
+                if (mess != "")
+                    embed1.addFields({name: " ", value: mess, inline: true})
             }
 
         if (notTown.length > 0) {

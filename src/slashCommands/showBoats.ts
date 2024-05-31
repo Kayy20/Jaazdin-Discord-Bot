@@ -1,5 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder, userMention } from "discord.js";
 import { SlashCommand } from "../types";
+import { isObjectIdOrHexString } from "mongoose";
 
 
 const command : SlashCommand = {
@@ -42,6 +43,9 @@ const command : SlashCommand = {
 
                         str += " have their gp wage die amount +1.";
 
+                        //console.log("Name: " + i.boatName + ", Weeks: " + i.weeksLeft + ", T2 Ability: " + i.tier2Ability + ", shipment Length: " + i.shipment.length + ", Jobs: " + i.jobs + " ");
+                        //console.log(i.shipment);
+
 
                         embed1.addFields({name: i.boatName + "(Time till Departure: " + i.weeksLeft + " weeks)", value: str})
 
@@ -54,27 +58,48 @@ const command : SlashCommand = {
 
                             const targetLength = Math.ceil(i.shipment.length / 3);
 
-                            const firstArray = i.shipment.slice(0, targetLength);
-                            const secondArray = i.shipment.slice(targetLength, targetLength * 2 - 1);
-                            const thirdArray = i.shipment.slice(targetLength * 2 - 1);
+                            // Need to change this depending on how many items are in the shipment
+
+                            let firstArray = i.shipment.slice(0, targetLength);
+                            let secondArray = i.shipment.slice(targetLength, targetLength * 2 - 1);
+                            let thirdArray = i.shipment.slice(targetLength * 2 - 1);
+
+                            switch (i.shipment.length) {
+                                case 1:
+                                    firstArray = i.shipment.slice(0, 1);
+                                    secondArray = [];
+                                    thirdArray = [];
+                                    break;
+                                case 2:
+                                    firstArray = i.shipment.slice(0, 1);
+                                    secondArray = i.shipment.slice(1, 2);
+                                    thirdArray = [];
+                                    break;
+                                case 3:
+                                    firstArray = i.shipment.slice(0, 1);
+                                    secondArray = i.shipment.slice(1, 2);
+                                    thirdArray = i.shipment.slice(2, 3);
+                                    break;
+                            }
+
                             // First Array
                             let mess = "";
                             for (const j of firstArray) 
                                 mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-                            embed1.addFields({name: " ", value: mess, inline: true})
+                            if (mess != "")
+                                embed1.addFields({name: " ", value: mess, inline: true})
                             // Second Array
                             mess = "";
                             for (const j of secondArray) 
                                 mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-                            embed1.addFields({name: " ", value: mess, inline: true})
+                            if (mess != "")
+                                embed1.addFields({name: " ", value: mess, inline: true})
                             // Third Array
                             mess = "";
                             for (const j of thirdArray) 
                                 mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-
-                            embed1.addFields({name: " ", value: mess, inline: true})
+                            if (mess != "")
+                                embed1.addFields({name: " ", value: mess, inline: true})
                         }
                     }
                 }
