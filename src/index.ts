@@ -164,91 +164,111 @@ async function SendUpdate() {
         let inTown = s.boatsInTown; // Array of information of boats in Town
 
 
-        const embed1 = new EmbedBuilder()
-            .setColor('Aqua')
-            .setTitle("Boat Information")
-            .setTimestamp();
+        const embeds = [];
+                console.log(Math.ceil(inTown.length/4));
+                if (inTown.length > 0){
+                    for (let i = 0; i < Math.ceil(inTown.length / 4); i++){
 
-        if (inTown.length > 0)
-            for (const i of inTown) {
-
-                let m = i.jobs.split(' ');
-                let str = "";
-                for (const a of m) {
-                    str += a + ", ";
-                }
-                str = str.slice(0, -2);
-
-                str += " have their gp wage die amount +1.";
-
-
-                embed1.addFields({ name: i.boatName + "(Time till Departure: " + i.weeksLeft + " weeks)", value: str })
-
-                if (i.tier2Ability != "") {
-                    embed1.addFields({ name: "Additional Feature!", value: i.tier2Ability });
-                }
-
-                embed1.addFields({ name: "Goods", value: " " });
+                    let embed1 = new EmbedBuilder()
+                    .setColor('Aqua')
+                    .setTitle(i == 0? "Boat Information" : "Boat Information Continued...")
+                    .setTimestamp();
                 
-                
+                    for (let j = 0; j < 4; j++){
+                        if (i*4 + j >= inTown.length) break;
+                        let m = inTown[i*4 + j].jobs.split(' ');
+                        let str = "";
+                        for (const a of m){
+                            str += a + ", ";
+                        }
+                        str = str.slice(0, -2);
 
-                const targetLength = Math.ceil(i.shipment.length / 3);
+                        str += " have their gp wage die amount +1.";
 
-                let firstArray = i.shipment.slice(0, targetLength);
-                let secondArray = i.shipment.slice(targetLength, targetLength * 2 - 1);
-                let thirdArray = i.shipment.slice(targetLength * 2 - 1);
+                        console.log("Name: " + inTown[i*4 + j].boatName + ", Weeks: " + inTown[i*4 + j].weeksLeft + ", T2 Ability: " + inTown[i*4 + j].tier2Ability + ", shipment Length: " + inTown[i*4 + j].shipment.length + ", Jobs: " + inTown[i*4 + j].jobs + " ");
+                        console.log(inTown[i*4 + j].shipment);
 
-                switch (i.shipment.length) {
-                    case 1:
-                        firstArray = i.shipment.slice(0, 1);
-                        secondArray = [];
-                        thirdArray = [];
-                        break;
-                    case 2:
-                        firstArray = i.shipment.slice(0, 1);
-                        secondArray = i.shipment.slice(1, 2);
-                        thirdArray = [];
-                        break;
-                    case 3:
-                        firstArray = i.shipment.slice(0, 1);
-                        secondArray = i.shipment.slice(1, 2);
-                        thirdArray = i.shipment.slice(2, 3);
-                        break;
+
+                        embed1.addFields({name: inTown[i*4 + j].boatName + " (Time till Departure: " + inTown[i*4 + j].weeksLeft + " weeks)", value: str})
+
+                        if (inTown[i*4 + j].tier2Ability != ""){
+                            embed1.addFields({name: "Additional Feature!", value: inTown[i*4 + j].tier2Ability});
+                        }
+                        if (inTown[i*4 + j].shipment.length > 0)
+                        {
+                            embed1.addFields({name: "Goods", value: " "});
+
+                            const targetLength = Math.ceil(inTown[i*4 + j].shipment.length / 3);
+
+                            // Need to change this depending on how many items are in the shipment
+
+                            let firstArray = inTown[i*4 + j].shipment.slice(0, targetLength);
+                            let secondArray = inTown[i*4 + j].shipment.slice(targetLength, targetLength * 2 - 1);
+                            let thirdArray = inTown[i*4 + j].shipment.slice(targetLength * 2 - 1);
+
+                            switch (inTown[i*4 + j].shipment.length) {
+                                case 1:
+                                    firstArray = inTown[i*4 + j].shipment.slice(0, 1);
+                                    secondArray = [];
+                                    thirdArray = [];
+                                    break;
+                                case 2:
+                                    firstArray = inTown[i*4 + j].shipment.slice(0, 1);
+                                    secondArray = inTown[i*4 + j].shipment.slice(1, 2);
+                                    thirdArray = [];
+                                    break;
+                                case 3:
+                                    firstArray = inTown[i*4 + j].shipment.slice(0, 1);
+                                    secondArray = inTown[i*4 + j].shipment.slice(1, 2);
+                                    thirdArray = inTown[i*4 + j].shipment.slice(2, 3);
+                                    break;
+                            }
+
+                            // First Array
+                            let mess = "";
+                            for (const j of firstArray) 
+                                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+                            if (mess != "")
+                                embed1.addFields({name: " ", value: mess, inline: true})
+                            // Second Array
+                            mess = "";
+                            for (const j of secondArray) 
+                                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+                            if (mess != "")
+                                embed1.addFields({name: " ", value: mess, inline: true})
+                            // Third Array
+                            mess = "";
+                            for (const j of thirdArray) 
+                                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+                            if (mess != "")
+                                embed1.addFields({name: " ", value: mess, inline: true})
+                        }
+                    }
+                    embeds.push(embed1);
+                console.log("Pushed " +embed1);
                 }
-
-                // First Array
-                let mess = "";
-                for (const j of firstArray) 
-                    mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-                if (mess != "")
-                    embed1.addFields({name: " ", value: mess, inline: true})
-                // Second Array
-                mess = "";
-                for (const j of secondArray) 
-                    mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-                if (mess != "")
-                    embed1.addFields({name: " ", value: mess, inline: true})
-                // Third Array
-                mess = "";
-                for (const j of thirdArray) 
-                    mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-                if (mess != "")
-                    embed1.addFields({name: " ", value: mess, inline: true})
             }
+            
+            
 
-        if (notTown.length > 0) {
-            let mess = ""
-            let mess1 = ""
-            for (const i of notTown) {
-                mess += i.boatName + "\n";
-                mess1 += i.weeksLeft + "\n"
+            if (notTown.length > 0){
+                let mess = ""
+                let mess1 = ""
+                for (const k of notTown){
+                    mess += k.boatName + "\n";
+                    mess1 += k.weeksLeft + "\n"
+                }
+                let embed2 = new EmbedBuilder()
+                .setColor('Aqua')
+                .setTitle("Sea Information")
+                .setTimestamp()
+                .addFields({name: "Boats at Sea", value: mess, inline: true})
+                .addFields({name: "Time till arrival", value: mess1, inline: true})
+                embeds.push(embed2);
             }
-            embed1.addFields({ name: "Boats at Sea", value: mess, inline: true })
-            embed1.addFields({ name: "Time till arrival", value: mess1, inline: true })
-        }
 
         if (channel instanceof TextChannel) {
-            channel.send({ embeds: [embed1] });
+            channel.send({ embeds: embeds });
         }
     }
 
@@ -739,7 +759,7 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                         .setMinLength(1)
                         .setPlaceholder("1")
                         .setCustomId('tier')
-                        .setLabel("Tier")
+                        .setLabel("Tier (Must be between 3 and 7)")
                         .setStyle(TextInputStyle.Short)
                         .setRequired(true)
 
@@ -852,7 +872,7 @@ client.on('interactionCreate', async (interaction: Interaction): Promise<void> =
                 try {
                     let q = parseInt(tier)
 
-                    if (q > 7 || !q || q < 2) {
+                    if (q > 7 || !q || q < 3) {
 
                         interaction.reply({ content: "Invalid Input, try using numbers that are valid! \nTier needs to be between 3 and 7", ephemeral: true })
                         return;
