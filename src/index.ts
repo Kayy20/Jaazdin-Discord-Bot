@@ -45,16 +45,26 @@ async function SendUpdate() {
     if (!foundBuilding) {
         return
     }
-    // Find each finished/unfinished building    
-    let finishedBuildings = "";
+    // Find each finished/unfinished building
+    let buildingsFinishedList = new Array();
     let updatedBuildings = "";
     let pings = "";
     // update each building
     for await (const doc of BuildingDB.find()) {
         doc.time -= 1;
         if (doc.time == 0) {
-            pings += userMention(doc.user);
-            finishedBuildings += `${userMention(doc.user)} ${doc.name} to Tier: ${doc.tier} has been completed!\n`;
+            if (!pings.includes(userMention(doc.user)))
+                pings += userMention(doc.user);
+            let pushed = false;
+            for (let s of buildingsFinishedList){
+                if (s.includes(userMention(doc.user))){
+                    s += `${doc.name} to Tier: ${doc.tier}\n`;
+                    pushed = true;
+                }
+            }
+            if (!pushed){
+                buildingsFinishedList.push(`${userMention(doc.user)}:\n${doc.name} to Tier: ${doc.tier}\n`);
+            }
             BuildingDB.deleteOne({ name: doc.name }).exec();
         }
         else {
@@ -63,15 +73,30 @@ async function SendUpdate() {
         }
     }
 
-    let finishedPlants = "";
+    let finishedBuildings = "";
+    for (let s of buildingsFinishedList){
+        finishedBuildings += s;
+    }
+
+    let plantsFinishedList = new Array();
     let updatedPlants = "";
     let readdedPlants = "";
     // update each plant
     for await (const doc of PlantDB.find()) {
         doc.time -= 1;
         if (doc.time == 0) {
-            pings += userMention(doc.user);
-            finishedPlants += `${userMention(doc.user)} fresh harvest of ${doc.name}!\n`;
+            if (!pings.includes(userMention(doc.user)))
+                pings += userMention(doc.user);
+            let pushed = false;
+            for (let s of plantsFinishedList){
+                if (s.includes(userMention(doc.user))){
+                    s += `${doc.name}\n`;
+                    pushed = true;
+                }
+            }
+            if (!pushed){
+                plantsFinishedList.push(`${userMention(doc.user)}:\n${doc.name}\n`);
+            }
             if (doc.repeatable) {
                 if (doc.repeatTime)
                     doc.time = doc.repeatTime;
@@ -86,14 +111,29 @@ async function SendUpdate() {
         }
     }
 
-    let finishedItems = "";
+    let finishedPlants = "";
+    for (let s of plantsFinishedList){
+        finishedPlants += s;
+    }
+
+    let itemsFinishedList = new Array();
     let updatedItems = "";
     // update each item
     for await (const doc of ItemDB.find()) {
         doc.time -= 1;
         if (doc.time == 0) {
-            pings += userMention(doc.user);
-            finishedItems += `${userMention(doc.user)}, your ${doc.name} is finished!\n`;
+            if (!pings.includes(userMention(doc.user)))
+                pings += userMention(doc.user);
+            let pushed = false;
+            for (let s of itemsFinishedList){
+                if (s.includes(userMention(doc.user))){
+                    s += `${doc.name}\n`;
+                    pushed = true;
+                }
+            }
+            if (!pushed){
+                itemsFinishedList.push(`${userMention(doc.user)}:\n${doc.name}\n`);
+            }
             ItemDB.deleteOne({ name: doc.name }).exec();
         }
         else {
@@ -102,6 +142,11 @@ async function SendUpdate() {
         }
     }
 
+    
+    let finishedItems = "";
+    for (let s of itemsFinishedList){
+        finishedItems += s;
+    }
 
     // Find the days of the week and apply them to the birthdays here //
 

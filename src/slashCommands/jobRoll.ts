@@ -29,17 +29,33 @@ const command : SlashCommand = {
                 return
             }
 
-            const jobSelect = new StringSelectMenuBuilder()
-                .setCustomId('job-'+interaction.user.id)
-                .setPlaceholder('Select your job');
-                for (const i of buildings){
-                    jobSelect.addOptions(
-                        {
-                            label: i.name,
-                            value: i.name
-                        }
-                    )
+            const menus = [];
+            let jobMenus = new StringSelectMenuBuilder()
+            .setCustomId('0-'+interaction.user.id)
+            .setPlaceholder('Select your job');
+
+            let count = 0;
+            console.log(buildings.length);
+            for (const i of buildings){
+
+                if (count == 25) {
+                    menus.push(jobMenus);
+                    jobMenus = new StringSelectMenuBuilder()
+                    .setCustomId(menus.length+'-'+interaction.user.id)
+                    .setPlaceholder('Select your job continued...')
+                    count = 0;
                 }
+
+                jobMenus.addOptions(
+                    {
+                        label: i.name,
+                        value: i.name
+                    }
+                )
+
+                count++;
+            }
+            menus.push(jobMenus);
             const secRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
                 [
                     new ButtonBuilder()
@@ -54,9 +70,12 @@ const command : SlashCommand = {
                 ]
             )
 
-            const firRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(jobSelect);
+            const firstRow = [];
+            for (let i = 0; i < menus.length; i++){
+                firstRow.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menus[i]));
 
-            interaction.editReply({components: [firRow, secRow]})
+            } 
+            interaction.editReply({components: [...firstRow, secRow]})
 
         } catch (error) {
             interaction.editReply({content: "Something went wrong..."});
