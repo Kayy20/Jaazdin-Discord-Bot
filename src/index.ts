@@ -153,62 +153,113 @@ async function SendUpdate() {
     // Find Channel
     const channel = await client.channels.cache.get(foundBuilding.channel.toString());
 
-    const embeds = [];
-
     // Create embed with information
     let embed = new EmbedBuilder()
         .setColor('Gold')
         .setTitle("Weekly Downtime Reset")
         .setTimestamp();
-    embeds.push (embed);
+    
+    if (channel instanceof TextChannel)
+        channel.send({ content: pings, embeds: [embed] });
+
+    // Buildings
 
     embed = new EmbedBuilder()
         .setColor('Green')
-        .setTitle("Finished")
-        .addFields(
-            {
-                name: "Buildings",
-                value: finishedBuildings == "" ? "None" : finishedBuildings
-            },
-            {
-                name: "Plants",
-                value: finishedPlants == "" ? "None" : finishedPlants
-            },
-            {
-                name: "Readded Plants",
-                value: readdedPlants == "" ? "None" : readdedPlants
-            },
-            {
-                name: "Items",
-                value: finishedItems == "" ? "None" : finishedItems
-            },
-        )
-        .setTimestamp();
-
-        embeds.push(embed);
-
-        embed = new EmbedBuilder()
-        .setColor('DarkRed')
-        .setTitle("In Progress")
-        .setFields(
-        {
-            name: "Buildings",
-            value: updatedBuildings == "" ? "None" : updatedBuildings
-        },
-        {
-            name: "Plants",
-            value: updatedPlants == "" ? "None" : updatedPlants
-        },
-        {
-            name: "Items",
-            value: updatedItems == "" ? "None" : updatedItems
-        },
-    )
-
-    embeds.push(embed);
+        .setTitle("Finished Buildings")
+        // .addFields(
+        //     {
+        //         name: "Buildings",
+        //         value: finishedBuildings == "" ? "None" : finishedBuildings
+        //     },
+        //     {
+        //         name: "Plants",
+        //         value: finishedPlants == "" ? "None" : finishedPlants
+        //     },
+        //     {
+        //         name: "Readded Plants",
+        //         value: readdedPlants == "" ? "None" : readdedPlants
+        //     },
+        //     {
+        //         name: "Items",
+        //         value: finishedItems == "" ? "None" : finishedItems
+        //     },
+        // )
+        // .setTimestamp();
 
     if (channel instanceof TextChannel)
-        channel.send({ content: pings, embeds: embeds });
+        channel.send({ content: finishedBuildings, embeds: [embed] });
+
+    // Plants
+    embed = new EmbedBuilder()
+        .setColor('Green')
+        .setTitle("Finished Plants")
+    
+    if (channel instanceof TextChannel)
+        channel.send({ content: finishedPlants, embeds: [embed] });
+
+
+    // Readded Plants
+    embed = new EmbedBuilder()
+        .setColor('Green')
+        .setTitle("Readded Plants")
+    
+    if (channel instanceof TextChannel)
+        channel.send({ content: readdedPlants, embeds: [embed] });
+
+    // Items
+    embed = new EmbedBuilder()
+        .setColor('Green')
+        .setTitle("Finished Items")
+    
+    if (channel instanceof TextChannel)
+        channel.send({ content: finishedItems, embeds: [embed] });
+
+    // In Progress
+    embed = new EmbedBuilder()
+    .setColor('DarkRed')
+    .setTitle("In Progress")
+    // .setFields(
+    // {
+    //     name: "Buildings",
+    //     value: updatedBuildings == "" ? "None" : updatedBuildings
+    // },
+    // {
+    //     name: "Plants",
+    //     value: updatedPlants == "" ? "None" : updatedPlants
+    // },
+    // {
+    //     name: "Items",
+    //     value: updatedItems == "" ? "None" : updatedItems
+    // },
+    // )
+
+    if (channel instanceof TextChannel)
+        channel.send({embeds: [embed] });
+
+    // Buildings
+    embed = new EmbedBuilder()
+        .setColor('DarkRed')
+        .setTitle("Buildings")
+    
+    if (channel instanceof TextChannel)
+        channel.send({ content: updatedBuildings, embeds: [embed] });
+
+    // Plants
+    embed = new EmbedBuilder()
+        .setColor('DarkRed')
+        .setTitle("Plants")
+    
+    if (channel instanceof TextChannel)
+        channel.send({ content: updatedPlants, embeds: [embed] });
+
+    // Items
+    embed = new EmbedBuilder()
+        .setColor('DarkRed')
+        .setTitle("Items")
+
+    if (channel instanceof TextChannel)
+        channel.send({ content: updatedItems, embeds: [embed] });
 
 
 
