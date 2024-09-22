@@ -100,13 +100,13 @@ async function SendUpdate() {
             if (doc.repeatable) {
                 if (doc.repeatTime)
                     doc.time = doc.repeatTime;
-                readdedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;
+                readdedPlants += `${doc.name.substring(0, doc.name.length > 15 ? 15 : doc.name.length)} \t Weeks Left: ${doc.time}\n`;
                 await doc.save();
             }
             else PlantDB.deleteOne({ name: doc.name }).exec();
         }
         else {
-            updatedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;
+            updatedPlants += `${doc.name.substring(0, doc.name.length > 15 ? 15 : doc.name.length)} \t Weeks Left: ${doc.time}\n`;
             await doc.save();
         }
     }
@@ -153,46 +153,62 @@ async function SendUpdate() {
     // Find Channel
     const channel = await client.channels.cache.get(foundBuilding.channel.toString());
 
+    const embeds = [];
+
     // Create embed with information
-    const embed = new EmbedBuilder()
+    let embed = new EmbedBuilder()
         .setColor('Gold')
         .setTitle("Weekly Downtime Reset")
+        .setTimestamp();
+    embeds.push (embed);
+
+    embed = new EmbedBuilder()
+        .setColor('Green')
+        .setTitle("Finished")
         .addFields(
             {
-                name: "Finished Buildings",
+                name: "Buildings",
                 value: finishedBuildings == "" ? "None" : finishedBuildings
             },
             {
-                name: "Buildings In Progress",
-                value: updatedBuildings == "" ? "None" : updatedBuildings
-            },
-            {
-                name: "Finished Plants",
+                name: "Plants",
                 value: finishedPlants == "" ? "None" : finishedPlants
-            },
-            {
-                name: "Plants In Progress",
-                value: updatedPlants == "" ? "None" : updatedPlants
             },
             {
                 name: "Readded Plants",
                 value: readdedPlants == "" ? "None" : readdedPlants
             },
             {
-                name: "Finished Items",
+                name: "Items",
                 value: finishedItems == "" ? "None" : finishedItems
             },
-            {
-                name: "Items in Progress",
-                value: updatedItems == "" ? "None" : updatedItems
-            }
         )
         .setTimestamp();
 
+        embeds.push(embed);
 
+        embed = new EmbedBuilder()
+        .setColor('DarkRed')
+        .setTitle("In Progress")
+        .setFields(
+        {
+            name: "Buildings",
+            value: updatedBuildings == "" ? "None" : updatedBuildings
+        },
+        {
+            name: "Plants",
+            value: updatedPlants == "" ? "None" : updatedPlants
+        },
+        {
+            name: "Items",
+            value: updatedItems == "" ? "None" : updatedItems
+        },
+    )
+
+    embeds.push(embed);
 
     if (channel instanceof TextChannel)
-        channel.send({ content: pings, embeds: [embed] });
+        channel.send({ content: pings, embeds: embeds });
 
 
 
