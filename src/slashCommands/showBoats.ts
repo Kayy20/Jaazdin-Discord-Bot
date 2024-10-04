@@ -17,10 +17,15 @@ const command : SlashCommand = {
             // Ship stuff
             var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
             var req = new XMLHttpRequest();
+
+            let replied = false;
+
             req.open("GET", "http://jaazdinapi.mygamesonline.org/Commands/ShowBoats.php", true);
             req.onload = function(){
-                //console.log("Connected! --> " + this.responseText);
+                console.log("Connected! --> " + this.responseText);
                 let s = JSON.parse(this.responseText);
+
+                //console.log(s);
                 
                 let notTown = s.boatsNotInTown; // Array of information of boats not in town
                 // {"boatsNotInTown":[{"boatName":"test","weeksLeft":"1"}]}
@@ -109,6 +114,13 @@ const command : SlashCommand = {
                     embeds.push(embed1);
                 console.log("Pushed " +embed1);
                 }
+            } else {
+                let embed1 = new EmbedBuilder()
+                .setColor('Aqua')
+                .setTitle("Boat Information")
+                .setTimestamp()
+                .addFields({name: "No Boats in Town", value: " "});
+                embeds.push(embed1);
             }
             
             
@@ -127,17 +139,44 @@ const command : SlashCommand = {
                 .addFields({name: "Boats at Sea", value: mess, inline: true})
                 .addFields({name: "Time till arrival", value: mess1, inline: true})
                 embeds.push(embed2);
+            } else {
+                let embed2 = new EmbedBuilder()
+                .setColor('Aqua')
+                .setTitle("Sea Information")
+                .setTimestamp()
+                .addFields({name: "No Boats at Sea", value: " "})
+                embeds.push(embed2);
             }
                 
-
+                
+                replied = true;
                 interaction.editReply({embeds: embeds});
             }
 
             req.send();
+            if (!replied){
+                const embeds = [];
+                let embed1 = new EmbedBuilder()
+                .setColor('Aqua')
+                .setTitle("Boat Information")
+                .setTimestamp()
+                .addFields({name: "No Boats in Town", value: " "});
+                embeds.push(embed1);
+                let embed2 = new EmbedBuilder()
+                .setColor('Aqua')
+                .setTitle("Sea Information")
+                .setTimestamp()
+                .addFields({name: "No Boats at Sea", value: " "})
+                embeds.push(embed2);
+                interaction.editReply({embeds: embeds});
+            }
 
         } catch (error) {
             interaction.editReply({content: error.message});
         }
+
+        
+
     }, cooldown: 10
 }
 

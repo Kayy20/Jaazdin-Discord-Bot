@@ -48,71 +48,72 @@ async function SendUpdate() {
     // Find each finished/unfinished building
     let buildingsFinishedList = new Array();
     let updatedBuildings = "";
-    let pings = "";
     // update each building
     for await (const doc of BuildingDB.find()) {
         doc.time -= 1;
         if (doc.time == 0) {
-            if (!pings.includes(userMention(doc.user)))
-                pings += userMention(doc.user);
             let pushed = false;
-            for (let s of buildingsFinishedList){
-                if (s.includes(userMention(doc.user))){
-                    s += `${doc.name} to Tier: ${doc.tier}\n`;
+            for (let s of buildingsFinishedList) {
+                if (s.includes(userMention(doc.user))) {
+                    let str = s;
+                    str += `${doc.name}\n`;
+                    buildingsFinishedList.splice(buildingsFinishedList.indexOf(s), 1, str);
+                    //console.log(buildingsFinishedList);
                     pushed = true;
                 }
             }
-            if (!pushed){
+            if (!pushed) {
                 buildingsFinishedList.push(`${userMention(doc.user)}:\n${doc.name} to Tier: ${doc.tier}\n`);
             }
-            BuildingDB.deleteOne({ name: doc.name }).exec();
+            //BuildingDB.deleteOne({ name: doc.name }).exec();
         }
         else {
             updatedBuildings += `${doc.name} \t Tier: ${doc.tier} \t Weeks Left: ${doc.time}\n`;
-            await doc.save();
+            //await doc.save();
         }
     }
 
     let finishedBuildings = "";
-    for (let s of buildingsFinishedList){
+    for (let s of buildingsFinishedList) {
         finishedBuildings += s;
     }
 
-    let plantsFinishedList = new Array();
+    let plantsFinishedList = [];
     let updatedPlants = "";
     let readdedPlants = "";
     // update each plant
     for await (const doc of PlantDB.find()) {
         doc.time -= 1;
         if (doc.time == 0) {
-            if (!pings.includes(userMention(doc.user)))
-                pings += userMention(doc.user);
             let pushed = false;
-            for (let s of plantsFinishedList){
-                if (s.includes(userMention(doc.user))){
-                    s += `${doc.name}\n`;
+            for (let s of plantsFinishedList) {
+                if (s.includes(userMention(doc.user))) {
+                    let str = s;
+                    str += `${doc.name}\n`;
+                    plantsFinishedList.splice(plantsFinishedList.indexOf(s), 1, str);
+                    //console.log(plantsFinishedList);
                     pushed = true;
                 }
             }
-            if (!pushed){
+            if (!pushed) {
                 plantsFinishedList.push(`${userMention(doc.user)}:\n${doc.name}\n`);
             }
             if (doc.repeatable) {
                 if (doc.repeatTime)
                     doc.time = doc.repeatTime;
-                readdedPlants += `${doc.name.substring(0, doc.name.length > 15 ? 15 : doc.name.length)} \t Weeks Left: ${doc.time}\n`;
-                await doc.save();
+                readdedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;
+                //await doc.save();
             }
-            else PlantDB.deleteOne({ name: doc.name }).exec();
+            //else PlantDB.deleteOne({ name: doc.name }).exec();
         }
         else {
-            updatedPlants += `${doc.name.substring(0, doc.name.length > 15 ? 15 : doc.name.length)} \t Weeks Left: ${doc.time}\n`;
-            await doc.save();
+            updatedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;
+            //await doc.save();
         }
     }
 
     let finishedPlants = "";
-    for (let s of plantsFinishedList){
+    for (let s of plantsFinishedList) {
         finishedPlants += s;
     }
 
@@ -122,29 +123,30 @@ async function SendUpdate() {
     for await (const doc of ItemDB.find()) {
         doc.time -= 1;
         if (doc.time == 0) {
-            if (!pings.includes(userMention(doc.user)))
-                pings += userMention(doc.user);
             let pushed = false;
-            for (let s of itemsFinishedList){
-                if (s.includes(userMention(doc.user))){
-                    s += `${doc.name}\n`;
+            for (let s of itemsFinishedList) {
+                if (s.includes(userMention(doc.user))) {
+                    let str = s;
+                    str += `${doc.name}\n`;
+                    itemsFinishedList.splice(itemsFinishedList.indexOf(s), 1, str);
+                    //console.log(itemsFinishedList);
                     pushed = true;
                 }
             }
-            if (!pushed){
+            if (!pushed) {
                 itemsFinishedList.push(`${userMention(doc.user)}:\n${doc.name}\n`);
             }
-            ItemDB.deleteOne({ name: doc.name }).exec();
+            //ItemDB.deleteOne({ name: doc.name }).exec();
         }
         else {
             updatedItems += `${doc.name} \t Weeks Left: ${doc.time}\n`;
-            await doc.save();
+            //await doc.save();
         }
     }
 
-    
+
     let finishedItems = "";
-    for (let s of itemsFinishedList){
+    for (let s of itemsFinishedList) {
         finishedItems += s;
     }
 
@@ -158,67 +160,75 @@ async function SendUpdate() {
         .setColor('Gold')
         .setTitle("Weekly Downtime Reset")
         .setTimestamp();
-    
+
     if (channel instanceof TextChannel)
-        channel.send({ content: pings, embeds: [embed] });
+        channel.send({ embeds: [embed] });
 
     // Buildings
 
     embed = new EmbedBuilder()
         .setColor('Green')
         .setTitle("Finished Buildings")
-        // .addFields(
-        //     {
-        //         name: "Buildings",
-        //         value: finishedBuildings == "" ? "None" : finishedBuildings
-        //     },
-        //     {
-        //         name: "Plants",
-        //         value: finishedPlants == "" ? "None" : finishedPlants
-        //     },
-        //     {
-        //         name: "Readded Plants",
-        //         value: readdedPlants == "" ? "None" : readdedPlants
-        //     },
-        //     {
-        //         name: "Items",
-        //         value: finishedItems == "" ? "None" : finishedItems
-        //     },
-        // )
-        // .setTimestamp();
+    // .addFields(
+    //     {
+    //         name: "Buildings",
+    //         value: finishedBuildings == "" ? "None" : finishedBuildings
+    //     },
+    //     {
+    //         name: "Plants",
+    //         value: finishedPlants == "" ? "None" : finishedPlants
+    //     },
+    //     {
+    //         name: "Readded Plants",
+    //         value: readdedPlants == "" ? "None" : readdedPlants
+    //     },
+    //     {
+    //         name: "Items",
+    //         value: finishedItems == "" ? "None" : finishedItems
+    //     },
+    // )
+    // .setTimestamp();
 
-    if (channel instanceof TextChannel)
-        channel.send({ content: finishedBuildings, embeds: [embed] });
+    if (channel instanceof TextChannel) {
+        channel.send({ embeds: [embed] })
+        channel.send({ content: finishedBuildings });
+    }
 
     // Plants
     embed = new EmbedBuilder()
         .setColor('Green')
         .setTitle("Finished Plants")
-    
-    if (channel instanceof TextChannel)
-        channel.send({ content: finishedPlants, embeds: [embed] });
+
+    if (channel instanceof TextChannel) {
+        channel.send({ embeds: [embed] })
+        channel.send({ content: finishedPlants });
+    }
 
 
     // Readded Plants
     embed = new EmbedBuilder()
         .setColor('Green')
         .setTitle("Readded Plants")
-    
-    if (channel instanceof TextChannel)
-        channel.send({ content: readdedPlants, embeds: [embed] });
+
+    if (channel instanceof TextChannel) {
+        channel.send({ embeds: [embed] })
+        channel.send({ content: readdedPlants });
+    }
 
     // Items
     embed = new EmbedBuilder()
         .setColor('Green')
         .setTitle("Finished Items")
-    
-    if (channel instanceof TextChannel)
-        channel.send({ content: finishedItems, embeds: [embed] });
+
+    if (channel instanceof TextChannel) {
+        channel.send({ embeds: [embed] })
+        channel.send({ content: finishedItems });
+    }
 
     // In Progress
     embed = new EmbedBuilder()
-    .setColor('DarkRed')
-    .setTitle("In Progress")
+        .setColor('DarkRed')
+        .setTitle("In Progress")
     // .setFields(
     // {
     //     name: "Buildings",
@@ -234,34 +244,47 @@ async function SendUpdate() {
     // },
     // )
 
-    if (channel instanceof TextChannel)
-        channel.send({embeds: [embed] });
+    if (channel instanceof TextChannel) {
+        channel.send({ embeds: [embed] });
+        // channel.send({content: "/showbuildings"});
+        // channel.send({content: "/showplants"});
+        // channel.send({content: "/showitems"});
+    }
+
+
+
 
     // Buildings
     embed = new EmbedBuilder()
         .setColor('DarkRed')
         .setTitle("Buildings")
-    
-    if (channel instanceof TextChannel)
-        channel.send({ content: updatedBuildings, embeds: [embed] });
+
+    if (channel instanceof TextChannel) {
+        channel.send({ embeds: [embed] })
+        channel.send({ content: updatedBuildings });
+    }
 
     // Plants
     embed = new EmbedBuilder()
         .setColor('DarkRed')
         .setTitle("Plants")
-    
-    if (channel instanceof TextChannel)
-        channel.send({ content: updatedPlants, embeds: [embed] });
+
+    if (channel instanceof TextChannel) {
+        channel.send({ embeds: [embed] })
+        channel.send({ content: updatedPlants });
+    }
 
     // Items
     embed = new EmbedBuilder()
         .setColor('DarkRed')
         .setTitle("Items")
 
-    if (channel instanceof TextChannel)
-        channel.send({ content: updatedItems, embeds: [embed] });
+    if (channel instanceof TextChannel) {
+        channel.send({ embeds: [embed] })
+        channel.send({ content: updatedItems });
+    }
 
-
+    await new Promise(r => setTimeout(r, 5000));
 
     // Ship stuff
     var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
@@ -276,113 +299,125 @@ async function SendUpdate() {
         let inTown = s.boatsInTown; // Array of information of boats in Town
 
 
-        const embeds = [];
-                console.log(Math.ceil(inTown.length/4));
-                if (inTown.length > 0){
-                    for (let i = 0; i < Math.ceil(inTown.length / 4); i++){
+        const embeds = new Array();
+        console.log(Math.ceil(inTown.length / 4));
+        if (inTown.length > 0) {
+            for (let i = 0; i < Math.ceil(inTown.length / 4); i++) {
 
-                    let embed1 = new EmbedBuilder()
+                let embed1 = new EmbedBuilder()
                     .setColor('Aqua')
-                    .setTitle(i == 0? "Boat Information" : "Boat Information Continued...")
+                    .setTitle(i == 0 ? "Boat Information" : "Boat Information Continued...")
                     .setTimestamp();
-                
-                    for (let j = 0; j < 4; j++){
-                        if (i*4 + j >= inTown.length) break;
-                        let m = inTown[i*4 + j].jobs.split(' ');
-                        let str = "";
-                        for (const a of m){
-                            str += a + ", ";
-                        }
-                        str = str.slice(0, -2);
 
-                        str += " have their gp wage die amount +1.";
-
-                        console.log("Name: " + inTown[i*4 + j].boatName + ", Weeks: " + inTown[i*4 + j].weeksLeft + ", T2 Ability: " + inTown[i*4 + j].tier2Ability + ", shipment Length: " + inTown[i*4 + j].shipment.length + ", Jobs: " + inTown[i*4 + j].jobs + " ");
-                        console.log(inTown[i*4 + j].shipment);
-
-
-                        embed1.addFields({name: inTown[i*4 + j].boatName + " (Time till Departure: " + inTown[i*4 + j].weeksLeft + " weeks)", value: str})
-
-                        if (inTown[i*4 + j].tier2Ability != ""){
-                            embed1.addFields({name: "Additional Feature!", value: inTown[i*4 + j].tier2Ability});
-                        }
-                        if (inTown[i*4 + j].shipment.length > 0)
-                        {
-                            embed1.addFields({name: "Goods", value: " "});
-
-                            const targetLength = Math.ceil(inTown[i*4 + j].shipment.length / 3);
-
-                            // Need to change this depending on how many items are in the shipment
-
-                            let firstArray = inTown[i*4 + j].shipment.slice(0, targetLength);
-                            let secondArray = inTown[i*4 + j].shipment.slice(targetLength, targetLength * 2 - 1);
-                            let thirdArray = inTown[i*4 + j].shipment.slice(targetLength * 2 - 1);
-
-                            switch (inTown[i*4 + j].shipment.length) {
-                                case 1:
-                                    firstArray = inTown[i*4 + j].shipment.slice(0, 1);
-                                    secondArray = [];
-                                    thirdArray = [];
-                                    break;
-                                case 2:
-                                    firstArray = inTown[i*4 + j].shipment.slice(0, 1);
-                                    secondArray = inTown[i*4 + j].shipment.slice(1, 2);
-                                    thirdArray = [];
-                                    break;
-                                case 3:
-                                    firstArray = inTown[i*4 + j].shipment.slice(0, 1);
-                                    secondArray = inTown[i*4 + j].shipment.slice(1, 2);
-                                    thirdArray = inTown[i*4 + j].shipment.slice(2, 3);
-                                    break;
-                            }
-
-                            // First Array
-                            let mess = "";
-                            for (const j of firstArray) 
-                                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-                            if (mess != "")
-                                embed1.addFields({name: " ", value: mess, inline: true})
-                            // Second Array
-                            mess = "";
-                            for (const j of secondArray) 
-                                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-                            if (mess != "")
-                                embed1.addFields({name: " ", value: mess, inline: true})
-                            // Third Array
-                            mess = "";
-                            for (const j of thirdArray) 
-                                mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
-                            if (mess != "")
-                                embed1.addFields({name: " ", value: mess, inline: true})
-                        }
+                for (let j = 0; j < 4; j++) {
+                    if (i * 4 + j >= inTown.length) break;
+                    let m = inTown[i * 4 + j].jobs.split(' ');
+                    let str = "";
+                    for (const a of m) {
+                        str += a + ", ";
                     }
-                    embeds.push(embed1);
-                console.log("Pushed " +embed1);
-                }
-            }
-            
-            
+                    str = str.slice(0, -2);
 
-            if (notTown.length > 0){
-                let mess = ""
-                let mess1 = ""
-                for (const k of notTown){
-                    mess += k.boatName + "\n";
-                    mess1 += k.weeksLeft + "\n"
+                    str += " have their gp wage die amount +1.";
+
+                    console.log("Name: " + inTown[i * 4 + j].boatName + ", Weeks: " + inTown[i * 4 + j].weeksLeft + ", T2 Ability: " + inTown[i * 4 + j].tier2Ability + ", shipment Length: " + inTown[i * 4 + j].shipment.length + ", Jobs: " + inTown[i * 4 + j].jobs + " ");
+                    console.log(inTown[i * 4 + j].shipment);
+
+
+                    embed1.addFields({ name: inTown[i * 4 + j].boatName + " (Time till Departure: " + inTown[i * 4 + j].weeksLeft + " weeks)", value: str })
+
+                    if (inTown[i * 4 + j].tier2Ability != "") {
+                        embed1.addFields({ name: "Additional Feature!", value: inTown[i * 4 + j].tier2Ability });
+                    }
+                    if (inTown[i * 4 + j].shipment.length > 0) {
+                        embed1.addFields({ name: "Goods", value: " " });
+
+                        const targetLength = Math.ceil(inTown[i * 4 + j].shipment.length / 3);
+
+                        // Need to change this depending on how many items are in the shipment
+
+                        let firstArray = inTown[i * 4 + j].shipment.slice(0, targetLength);
+                        let secondArray = inTown[i * 4 + j].shipment.slice(targetLength, targetLength * 2 - 1);
+                        let thirdArray = inTown[i * 4 + j].shipment.slice(targetLength * 2 - 1);
+
+                        switch (inTown[i * 4 + j].shipment.length) {
+                            case 1:
+                                firstArray = inTown[i * 4 + j].shipment.slice(0, 1);
+                                secondArray = [];
+                                thirdArray = [];
+                                break;
+                            case 2:
+                                firstArray = inTown[i * 4 + j].shipment.slice(0, 1);
+                                secondArray = inTown[i * 4 + j].shipment.slice(1, 2);
+                                thirdArray = [];
+                                break;
+                            case 3:
+                                firstArray = inTown[i * 4 + j].shipment.slice(0, 1);
+                                secondArray = inTown[i * 4 + j].shipment.slice(1, 2);
+                                thirdArray = inTown[i * 4 + j].shipment.slice(2, 3);
+                                break;
+                        }
+
+                        // First Array
+                        let mess = "";
+                        for (const j of firstArray)
+                            mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+                        if (mess != "")
+                            embed1.addFields({ name: " ", value: mess, inline: true })
+                        // Second Array
+                        mess = "";
+                        for (const j of secondArray)
+                            mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+                        if (mess != "")
+                            embed1.addFields({ name: " ", value: mess, inline: true })
+                        // Third Array
+                        mess = "";
+                        for (const j of thirdArray)
+                            mess += j.name + " (x" + j.quantity + " " + j.price + ")\n";
+                        if (mess != "")
+                            embed1.addFields({ name: " ", value: mess, inline: true })
+                    }
                 }
-                let embed2 = new EmbedBuilder()
+                embeds.push(embed1);
+                console.log("Pushed " + embed1);
+            }
+        } else {
+            let embed1 = new EmbedBuilder()
+                .setColor('Aqua')
+                .setTitle("Boat Information")
+                .setTimestamp()
+                .setDescription("No Boats in Town!")
+            embeds.push(embed1);
+        }
+
+
+
+        if (notTown.length > 0) {
+            let mess = ""
+            let mess1 = ""
+            for (const k of notTown) {
+                mess += k.boatName + "\n";
+                mess1 += k.weeksLeft + "\n"
+            }
+            let embed2 = new EmbedBuilder()
                 .setColor('Aqua')
                 .setTitle("Sea Information")
                 .setTimestamp()
-                .addFields({name: "Boats at Sea", value: mess, inline: true})
-                .addFields({name: "Time till arrival", value: mess1, inline: true})
-                embeds.push(embed2);
-            }
+                .addFields({ name: "Boats at Sea", value: mess, inline: true })
+                .addFields({ name: "Time till arrival", value: mess1, inline: true })
+            embeds.push(embed2);
+        } else {
+            let embed2 = new EmbedBuilder()
+                .setColor('Aqua')
+                .setTitle("Sea Information")
+                .setTimestamp()
+                .setDescription("No Boats at Sea!")
+            embeds.push(embed2);
+        }
 
-        if (channel instanceof TextChannel) {
+        if (channel instanceof TextChannel)
             channel.send({ embeds: embeds });
         }
-    }
 
     req.send();
 
