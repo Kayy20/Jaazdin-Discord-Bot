@@ -408,7 +408,7 @@ const command: SlashCommand = {
 
             // req.send();
             
-            interaction.reply({ content: "Updated!", ephemeral: true });
+            interaction.reply({ content: "Updated!"});
 
         } catch (error) {
             interaction.reply({ content: error.message });

@@ -65,11 +65,11 @@ async function SendUpdate() {
             if (!pushed) {
                 buildingsFinishedList.push(`${userMention(doc.user)}:\n${doc.name} to Tier: ${doc.tier}\n`);
             }
-            //BuildingDB.deleteOne({ name: doc.name }).exec();
+            BuildingDB.deleteOne({ name: doc.name }).exec();
         }
         else {
             updatedBuildings += `${doc.name} \t Tier: ${doc.tier} \t Weeks Left: ${doc.time}\n`;
-            //await doc.save();
+            await doc.save();
         }
     }
 
@@ -102,13 +102,13 @@ async function SendUpdate() {
                 if (doc.repeatTime)
                     doc.time = doc.repeatTime;
                 readdedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;
-                //await doc.save();
+                await doc.save();
             }
-            //else PlantDB.deleteOne({ name: doc.name }).exec();
+            else PlantDB.deleteOne({ name: doc.name }).exec();
         }
         else {
             updatedPlants += `${doc.name} \t Weeks Left: ${doc.time}\n`;
-            //await doc.save();
+            await doc.save();
         }
     }
 
@@ -136,11 +136,11 @@ async function SendUpdate() {
             if (!pushed) {
                 itemsFinishedList.push(`${userMention(doc.user)}:\n${doc.name}\n`);
             }
-            //ItemDB.deleteOne({ name: doc.name }).exec();
+            ItemDB.deleteOne({ name: doc.name }).exec();
         }
         else {
             updatedItems += `${doc.name} \t Weeks Left: ${doc.time}\n`;
-            //await doc.save();
+            await doc.save();
         }
     }
 
@@ -284,7 +284,7 @@ async function SendUpdate() {
         channel.send({ content: updatedItems });
     }
 
-    await new Promise(r => setTimeout(r, 5000));
+    await wait(10000);
 
     // Ship stuff
     var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
@@ -421,6 +421,10 @@ async function SendUpdate() {
 
     req.send();
 
+}
+
+function wait(ms : number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 let name = ""; // used for all types

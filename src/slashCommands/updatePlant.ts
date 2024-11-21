@@ -1,7 +1,8 @@
-import { InteractionResponse, SlashCommandBuilder, EmbedBuilder, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, userMention, ButtonStyle } from "discord.js";
+import { InteractionResponse, SlashCommandBuilder, EmbedBuilder, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, userMention, ButtonStyle, messageLink } from "discord.js";
 import { SlashCommand } from "../types";
 import  mongoose from "mongoose";
 import PlantDB from "../schemas/Plant";
+import { send } from "process";
 
 const command : SlashCommand = {
     command: new SlashCommandBuilder()
@@ -28,12 +29,12 @@ const command : SlashCommand = {
                 return
             }
 
-            const embeds = [];
+            // const embeds = [];
             const menus = [];
 
-            let nembed = new EmbedBuilder()
-            .setColor('Green')
-            .setTitle("Plants In Progress");
+            // let nembed = new EmbedBuilder()
+            // .setColor('Green')
+            // .setTitle("Plants In Progress");
 
             let menu = new StringSelectMenuBuilder()
             .setCustomId("0-"+interaction.user.id)
@@ -46,34 +47,51 @@ const command : SlashCommand = {
                 
 
                 if (count == 25) {
-                    embeds.push(nembed);
-                    nembed = new EmbedBuilder()
-                    .setColor('Green')
-                    .setTitle("Plants In Progress Continued...");
+                    // embeds.push(nembed);
+                    // nembed = new EmbedBuilder()
+                    // .setColor('Green')
+                    // .setTitle("Plants In Progress Continued...");
                     count = 0;
                     menus.push(menu);
+                    //console.log(menu.options)
                     menu = new StringSelectMenuBuilder()
                     .setCustomId(menus.length+"-"+interaction.user.id)
                     .setPlaceholder("No Plant continued...")
                 }
 
-                nembed.addFields(
-                    {
-                    name: building.name,
-                    value: `Weeks Left: ${building.time} \t Owner: ${userMention(building.user)}`
+                // nembed.addFields(
+                //    {
+                //    name: building.name,
+                //    value: `Weeks Left: ${building.time} \t Owner: ${userMention(building.user)}`
+                //    }
+                // )
+
+                let accepted = false
+                let i = 0;
+                while (!accepted) {
+                    try{
+                        menu.addOptions(
+                            {
+                                label: `${building.name.substring(0, 40)}, Weeks Left: ${building.time}, Owner: ${memb?.displayName}`,
+                                value: `${building.name}-${building.time}-${building.user}-${menu.options.length}${i}`,
+                            }
+                        )
+                        accepted = true;
+                    } catch (error) {
+                        i++;
+                        //console.log("Error: " + error.message + " " + menus.length+""+i + " " + building.name)
+                        if (i > 8) {
+                            accepted = true
+                        };
                     }
-                )
-                menu.addOptions(
-                    {
-                        label: `${building.name.substring(0, 40)}, Weeks Left: ${building.time}, Owner: ${memb?.displayName}`,
-                        value: `${building.name}-${building.time}-${building.user}`
-                    }
-                )
+                }
                 
                 count++;
             }
-            embeds.push(nembed);
+            // embeds.push(nembed);
             menus.push(menu);
+            
+            //console.log(menu.options)
 
             const secRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
                 [
@@ -105,7 +123,9 @@ const command : SlashCommand = {
                 .addComponents(menus[i]));
             }
 
-            interaction.reply({embeds: embeds, components: [...firstRow, secRow]})
+            //interaction.channel?.send({embeds: embeds})
+
+            interaction.reply({components: [...firstRow, secRow]})
             
 
         } catch (error) {
